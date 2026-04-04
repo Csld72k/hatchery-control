@@ -1,0 +1,20 @@
+{
+  "name": "hatchery-control",
+  "version": "1.0.0",
+  "description": "Aplicação para controle de lançamentos de indicadores e ordens de serviço do incubatório",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Claudiney Silva",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.0",
+    "express": "^5.2.1",
+    "mssql": "^12.2.1"
+  }
+}
