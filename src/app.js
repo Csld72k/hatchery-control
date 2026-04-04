@@ -8,8 +8,19 @@ connectDB();
 app.use(express.json());
 
 // Initial route
-app.get('/', (req, res) => {
-  res.send('API running 🚀')
+app.get('/orders', async (req, res) => {
+  try {
+    const result = await sql.query`
+    SELECT * FROM service_orders
+    `;
+
+    res.json(result.recordset);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error fetching orders.');
+  }
+
 });
 
 // New route - Create order
