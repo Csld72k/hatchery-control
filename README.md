@@ -9,9 +9,18 @@
 
 ## 📌 Visão Geral
 
-Sistema integrado para gerenciamento de **ordens de serviço** e registro de **indicadores de qualidade e produção**, com foco em centralização de dados, rastreabilidade operacional e suporte à tomada de decisão.
+Sistema integrado para gerenciamento de **ordens de serviço** e registro de **indicadores de qualidade e produção**, com foco em centralização de dados, rastreabilidade operacional e suporte à tomada de decisão baseada em dados.
 
 A aplicação simula um ambiente corporativo real, permitindo o controle completo das atividades operacionais e o monitoramento de desempenho por meio de indicadores (KPIs).
+
+---
+
+## 🎯 Objetivos
+
+- Centralizar informações operacionais  
+- Melhorar o controle e rastreabilidade das atividades  
+- Apoiar decisões baseadas em dados  
+- Aplicar conceitos reais de desenvolvimento full stack  
 
 ---
 
@@ -25,11 +34,11 @@ A aplicação simula um ambiente corporativo real, permitindo o controle complet
 
 ### 📊 Indicadores
 - Registro de dados de produção e qualidade  
-- Estrutura para KPIs  
+- Estrutura para cálculo de KPIs  
 - Base para dashboards  
 
-### 🔍 Consulta
-- Filtros e busca  
+### 🔍 Consulta e Análise
+- Filtros por status, setor e período  
 - Visualização de dados históricos  
 
 ---
@@ -41,9 +50,18 @@ A aplicação simula um ambiente corporativo real, permitindo o controle complet
 | Front-end   | HTML, CSS, JavaScript |
 | Back-end    | Node.js (Express) |
 | Banco       | Microsoft SQL Server |
-| IDE         | VSCode |
-| DB Tool     | SSMS |
+| IDE         | Visual Studio Code |
+| DB Tool     | SQL Server Management Studio (SSMS) |
 | Versionamento | Git + GitHub |
+
+---
+
+## 📦 Dependências Principais
+
+- express  
+- mssql  
+- dotenv  
+- cors  
 
 ---
 
@@ -51,30 +69,70 @@ A aplicação simula um ambiente corporativo real, permitindo o controle complet
 
 ```
 src/
+│
 ├── app.js
+├── controllers/
+├── routes/
 └── database/
     └── connection.js
 ```
 
 ---
 
+## ⚙️ Variáveis de Ambiente
 
-## 📡 Documentação da API
+Crie um arquivo `.env` na raiz do projeto:
 
-### 🔹 Criar Ordem
-
-**POST** `/orders`
-
-```json
-{
-  "sector": "Produção",
-  "local": "Setor A",
-  "requester": "Claudiney",
-  "problem_description": "Máquina parada"
-}
+```
+PORT=3000
+DB_SERVER=localhost
+DB_DATABASE=hatchery_control
+DB_USER=seu_usuario
+DB_PASSWORD=sua_senha
 ```
 
 ---
+
+## 🚀 Como Executar o Projeto
+
+### 1. Clonar o repositório
+
+```
+git clone https://github.com/Csld72k/hatchery-control.git
+```
+
+---
+
+### 2. Instalar dependências
+
+```
+npm install
+```
+
+---
+
+### 3. Configurar banco de dados
+
+- Criar o banco no SQL Server  
+- Atualizar as credenciais no `.env` ou no `connection.js`
+
+---
+
+### 4. Executar o projeto
+
+```
+npm start
+```
+
+ou (modo desenvolvimento com auto-reload):
+
+```
+npx nodemon src/app.js
+```
+
+---
+
+## 📡 Endpoints da API
 
 ### 🔹 Status da API
 
@@ -86,48 +144,59 @@ API running 🚀
 
 ---
 
+### 🔹 Criar ordem de serviço
+
+**POST** `/orders`
+
+```
+{
+  "sector": "Produção",
+  "local": "Setor A",
+  "requester": "Claudiney",
+  "problem_description": "Máquina parada"
+}
+```
+
+---
+
+### 🔹 Listar ordens de serviço
+
+**GET** `/orders`
+
+---
+
 ## 🧠 Arquitetura do Sistema
 
 ```
-[ Cliente (Front-end) ]
-          ↓
+[ Front-end ]
+      ↓
 [ API Node.js (Express) ]
-          ↓
+      ↓
 [ SQL Server ]
 ```
 
 ---
 
-## 🚀 Como Executar
-
-```bash
-git clone https://github.com/seu-usuario/seu-repositorio.git
-npm install
-node src/app.js
-```
-
-Acesse:
-http://localhost:3000
-
----
-
 ## 📊 Roadmap
 
-- [ ] Inserção de dados via API  
-- [ ] Consulta de ordens (GET)  
-- [ ] Atualização e exclusão  
+- [x] Estrutura inicial do projeto  
+- [x] Conexão com banco de dados  
+- [x] Inserção de dados via API  
+- [ ] Consulta avançada  
+- [ ] Atualização e exclusão de registros  
 - [ ] Dashboard de indicadores  
-- [ ] Autenticação JWT  
-- [ ] Swagger  
+- [ ] Autenticação (JWT)  
+- [ ] Documentação com Swagger  
 
 ---
 
 ## 👨‍💻 Autor
 
-**Claudiney**  
+Desenvolvido por **Claudiney**  
+Projeto focado em evolução prática em desenvolvimento backend  
 
 ---
 
 ## 📄 Licença
 
-MIT
+Este projeto está sob a licença MIT.

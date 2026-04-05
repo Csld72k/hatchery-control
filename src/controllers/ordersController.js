@@ -35,11 +35,34 @@ async function getOrders(req, res) {
 
   } catch (error) {
     console.error(error);
-    ser.status(500).send('Errror fetching orderes.');
+    ser.status(500).send('Error fetching orders.');
+  }
+}
+
+// GET order by ID
+async function getOrderById(req, res) {
+  try {
+    const { id } = req.params;
+
+    const result = await sql.query`
+    SELECT * FROM service_orders
+    WHERE id = ${id}
+    `;
+
+    if (result.recordset.length === 0) {
+      return res.status(404).send('Order not found.');
+    }
+
+    res.json(result.recordset[0]);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error fetching order.');
   }
 }
 
 module.exports = {
   createOrder,
-  getOrders
+  getOrders,
+  getOrderById
 };
