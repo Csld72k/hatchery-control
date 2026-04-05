@@ -13,7 +13,7 @@ Sistema integrado para gerenciamento de **ordens de serviço** e registro de **i
 
 A aplicação simula um ambiente corporativo real, permitindo o controle completo das atividades operacionais e o monitoramento de desempenho por meio de indicadores (KPIs).
 
-Baseado em uma necessidade real do ambiente de trabalho.
+Projeto baseado em uma necessidade real do ambiente de trabalho, desenvolvido como solução prática e evolutiva.
 
 ---
 
@@ -35,11 +35,12 @@ Baseado em uma necessidade real do ambiente de trabalho.
 - Atualização de ordens  
 - Exclusão de ordens  
 - Validação de campos obrigatórios via middleware  
+- Separação da lógica de negócio em camada de services  
 - Registro de informações detalhadas  
 
 ### 📊 Indicadores
 - Estrutura preparada para futura implementação  
-- Base para cálculo de KPIs 
+- Base para cálculo de KPIs  
 
 ### 🔍 Consulta e Análise
 - Consulta de dados via API  
@@ -66,6 +67,7 @@ Baseado em uma necessidade real do ambiente de trabalho.
 - mssql  
 - dotenv  
 - cors  
+- nodemon (dev)  
 
 ---
 
@@ -81,6 +83,8 @@ src/
 │   └── ordersRoutes.js
 ├── middlewares/
 │   └── orderValidationMiddleware.js
+├── services/
+│   └── ordersService.js
 ├── database/
 │   └── connection.js
 └── utils/
@@ -198,7 +202,7 @@ npm run dev
 Fluxo atual da aplicação:
 
 ```
-Route → Validation Middleware → Controller → Database
+Route → Validation Middleware → Controller → Service → Database
 ```
 
 ---
@@ -216,8 +220,8 @@ Route → Validation Middleware → Controller → Database
 - [x] Validação manual de dados
 - [x] Variáveis de ambiente no código
 - [x] Refatoração da validação para middleware
+- [x] Refatoração para camada de services
 - [ ] Implementação de indicadores
-- [ ] Refatoração para camada de services
 - [ ] Autenticação (JWT)
 - [ ] Documentação com Swagger
 

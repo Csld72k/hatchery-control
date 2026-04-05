@@ -1,21 +1,13 @@
-const { sql } = require('../database/connection');
+const { createOrderService, getOrdersService, getOrderByIdService, updateOrderService, deleteOrderService } = require('../services/ordersService');
 
 // Create order
 async function createOrder(req, res) {
   try {
-    const {
-      sector,
-      local,
-      requester,
-      problem_description
-    } = req.body;
+    const { sector, local, requester, problem_description } = req.body;
 
-    await sql.query`
-    INSERT INTO service_orders (sector, local, requester, problem_description)
-    VALUES (${sector}, ${local}, ${requester}, ${problem_description})
-    `;
+    await createOrderService({ sector, local, requester, problem_description });
 
-    res.status(201).send('Order saved successfully ✅');
+    res.status(201).send('Order saved successfully ✅.');
 
   } catch (error) {
     console.error(error);
@@ -27,11 +19,9 @@ async function createOrder(req, res) {
 // GET orders
 async function getOrders(req, res) {
   try {
-    const result = await sql.query`
-    SELECT * FROM service_orders
-    `;
+    const orders = await getOrdersService();
 
-    res.json(result.recordset);
+    res.json(orders);
 
   } catch (error) {
     console.error(error);
@@ -44,16 +34,13 @@ async function getOrderById(req, res) {
   try {
     const { id } = req.params;
 
-    const result = await sql.query`
-    SELECT * FROM service_orders
-    WHERE id = ${id}
-    `;
+    const order = await getOrderByIdService(id);
 
-    if (result.recordset.length === 0) {
+    if (!order) {
       return res.status(404).send('Order not found.');
     }
 
-    res.json(result.recordset[0]);
+    res.json(order);
 
   } catch (error) {
     console.error(error);
@@ -65,28 +52,15 @@ async function getOrderById(req, res) {
 async function updateOrder(req, res) {
   try {
     const { id } = req.params;
-    const {
-      sector,
-      local,
-      requester,
-      problem_description
-    } = req.body;
+    const { sector, local, requester, problem_description } = req.body;
 
-    const result = await sql.query`
-    UPDATE service_orders
-    SET
-      sector = ${sector},
-      local = ${local},
-      requester = ${requester},
-      problem_description = ${problem_description}
-    WHERE id = ${id}
-    `;
+    const rowsAffected = await updateOrderService(id, { sector, local, requester, problem_description });
 
-    if (result.rowsAffected[0] === 0) {
+    if (rowsAffected === 0) {
       return res.status(404).send('Order not found.');
     }
 
-    res.send('Order updated successfully ✅');
+    res.send('Order updated successfully ✅.');
 
   } catch (error) {
     console.error(error);
@@ -98,16 +72,13 @@ async function updateOrder(req, res) {
 async function deleteOrder(req, res) {
   try {
     const { id } = req.params;
-    const result = await sql.query`
-    DELETE FROM service_orders
-    WHERE id = ${id}
-    `;
+    const rowsAffected = await deleteOrderService(id);
 
-    if (result.rowsAffected[0] === 0) {
+    if (rowsAffected === 0) {
       return res.status(404).send('Order not found.');
     }
 
-    res.send('Order deleted successfully 🗑️');
+    res.send('Order deleted successfully 🗑️.');
 
   } catch (error) {
     console.error(error);
