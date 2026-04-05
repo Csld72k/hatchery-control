@@ -13,7 +13,7 @@ Sistema integrado para gerenciamento de **ordens de serviço** e registro de **i
 
 A aplicação simula um ambiente corporativo real, permitindo o controle completo das atividades operacionais e o monitoramento de desempenho por meio de indicadores (KPIs).
 
-Peguei uma necessidade real da empresa que trabalho e decidi criar a solução.
+Baseado em uma necessidade real do ambiente de trabalho.
 
 ---
 
@@ -31,16 +31,14 @@ Peguei uma necessidade real da empresa que trabalho e decidi criar a solução.
 ### 🛠️ Ordens de Serviço
 - Cadastro de ordens via API  
 - Listagem de ordens  
-- Estrutura preparada para CRUD completo (Create, Read, Update, Delete)  
+- Consulta por ID  
+- Atualização de ordens  
+- Exclusão de ordens  
 - Registro de informações detalhadas  
 
 ### 📊 Indicadores
 - Estrutura preparada para futura implementação  
 - Base para cálculo de KPIs  
-
-### 🔍 Consulta e Análise
-- Consulta de dados via API  
-- Base para filtros e análises futuras  
 
 ---
 
@@ -69,7 +67,6 @@ Peguei uma necessidade real da empresa que trabalho e decidi criar a solução.
 
 ## 🧱 Estrutura do Projeto
 
-```
 src/
 │
 ├── app.js
@@ -79,7 +76,6 @@ src/
 │   └── ordersRoutes.js
 └── database/
     └── connection.js
-```
 
 ---
 
@@ -87,13 +83,11 @@ src/
 
 Crie um arquivo `.env` na raiz do projeto:
 
-```
 PORT=3000
 DB_SERVER=localhost
 DB_DATABASE=hatchery_control
 DB_USER=seu_usuario
 DB_PASSWORD=sua_senha
-```
 
 ---
 
@@ -101,17 +95,13 @@ DB_PASSWORD=sua_senha
 
 ### 1. Clonar o repositório
 
-```
 git clone https://github.com/Csld72k/hatchery-control.git
-```
 
 ---
 
 ### 2. Instalar dependências
 
-```
 npm install
-```
 
 ---
 
@@ -126,70 +116,49 @@ npm install
 
 Modo padrão:
 
-```
 npm start
-```
 
 Modo desenvolvimento (auto-reload):
 
-```
 npm run dev
-```
 
 ---
 
 ## 📡 Endpoints da API
 
 ### 🔹 Status da API
-
-**GET** `/`
-
-```
-API running 🚀
-```
+GET /
 
 ---
 
-### 🔹 Criar ordem de serviço
-
-**POST** `/orders`
-
-```
-{
-  "sector": "Produção",
-  "local": "Setor A",
-  "requester": "Claudiney",
-  "problem_description": "Máquina parada"
-}
-```
+### 🔹 Criar ordem
+POST /orders
 
 ---
 
-### 🔹 Listar ordens de serviço
+### 🔹 Listar ordens
+GET /orders
 
-**GET** `/orders`
+---
+
+### 🔹 Buscar por ID
+GET /orders/:id
+
+---
+
+### 🔹 Atualizar ordem
+PUT /orders/:id
+
+---
+
+### 🔹 Excluir ordem
+DELETE /orders/:id
 
 ---
 
 ## 🧠 Arquitetura do Sistema
 
-Fluxo atual da aplicação:
-
-```
 Route → Controller → Database
-```
-
-Ou de forma mais completa:
-
-```
-[ Client ]
-    ↓
-[ Routes ]
-    ↓
-[ Controllers ]
-    ↓
-[ Database (SQL Server) ]
-```
 
 ---
 
@@ -200,9 +169,11 @@ Ou de forma mais completa:
 - [x] Conexão com banco de dados  
 - [x] Inserção de dados via API  
 - [x] Listagem de dados via API  
+- [x] Consulta por ID  
 - [x] Atualização de registros (PUT)  
-- [ ] Exclusão de registros (DELETE)  
+- [x] Exclusão de registros (DELETE)  
 - [ ] Implementação de indicadores  
+- [ ] Validação de dados  
 - [ ] Autenticação (JWT)  
 - [ ] Documentação com Swagger  
 
