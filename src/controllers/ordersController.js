@@ -1,4 +1,5 @@
 const { sql } = require('../database/connection');
+const validateOrder = require('../utils/validateOrder');
 
 // Create order
 async function createOrder(req, res) {
@@ -10,12 +11,18 @@ async function createOrder(req, res) {
       problem_description
     } = req.body;
 
+    const validationError = validateOrder(req.body);
+
+    if (validationError) {
+      return res.status(400).send(validationError);
+    }
+
     await sql.query`
     INSERT INTO service_orders (sector, local, requester, problem_description)
     VALUES (${sector}, ${local}, ${requester}, ${problem_description})
     `;
 
-    res.send('Order saved successfully ✅');
+    res.status(201).send('Order saved successfully ✅');
 
   } catch (error) {
     console.error(error);
@@ -72,6 +79,12 @@ async function updateOrder(req, res) {
       problem_description
     } = req.body;
 
+    const validationError = validateOrder(req.body);
+
+    if (validationError) {
+      return res.status(400).send(validationError);
+    }
+
     const result = await sql.query`
     UPDATE service_orders
     SET
@@ -114,6 +127,9 @@ async function deleteOrder(req, res) {
     res.status(500).send('Error deleting order.');
   }
 }
+
+// Validate order data
+
 
 module.exports = {
   createOrder,
