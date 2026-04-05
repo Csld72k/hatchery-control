@@ -1,16 +1,20 @@
 const express = require('express');
 const app = express();
-const { sql, connectDB } = require('./database/connection');
-const ordersController = require('./controllers/ordersController');
+const { connectDB } = require('./database/connection');
+const ordersRoutes = require('./routes/ordersRoutes');
 
 // Connect to the database
 connectDB();
 
 app.use(express.json());
 
-app.post('/orders', ordersController.createOrder);
-app.get('/orders', ordersController.getOrders);
+// Initial route
+app.get('/', (req, res) => {
+  res.send('API running 🚀');
+});
 
+// Orders routes
+app.use(ordersRoutes);
 
 app.listen(3000, () => {
   console.log('Server running on port 3000');
