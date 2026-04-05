@@ -1,5 +1,4 @@
 const { sql } = require('../database/connection');
-const validateOrder = require('../utils/validateOrder');
 
 // Create order
 async function createOrder(req, res) {
@@ -10,12 +9,6 @@ async function createOrder(req, res) {
       requester,
       problem_description
     } = req.body;
-
-    const validationError = validateOrder(req.body);
-
-    if (validationError) {
-      return res.status(400).send(validationError);
-    }
 
     await sql.query`
     INSERT INTO service_orders (sector, local, requester, problem_description)
@@ -78,12 +71,6 @@ async function updateOrder(req, res) {
       requester,
       problem_description
     } = req.body;
-
-    const validationError = validateOrder(req.body);
-
-    if (validationError) {
-      return res.status(400).send(validationError);
-    }
 
     const result = await sql.query`
     UPDATE service_orders

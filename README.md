@@ -13,7 +13,7 @@ Sistema integrado para gerenciamento de **ordens de serviço** e registro de **i
 
 A aplicação simula um ambiente corporativo real, permitindo o controle completo das atividades operacionais e o monitoramento de desempenho por meio de indicadores (KPIs).
 
-Projeto baseado em uma necessidade real do ambiente de trabalho, desenvolvido como solução prática e evolutiva.
+Baseado em uma necessidade real do ambiente de trabalho.
 
 ---
 
@@ -31,14 +31,15 @@ Projeto baseado em uma necessidade real do ambiente de trabalho, desenvolvido co
 ### 🛠️ Ordens de Serviço
 - Cadastro de ordens via API  
 - Listagem de ordens  
-- Atualização de ordens (PUT)  
-- Exclusão de ordens (DELETE)  
-- Estrutura completa de CRUD  
+- Consulta por ID  
+- Atualização de ordens  
+- Exclusão de ordens  
+- Validação de campos obrigatórios via middleware  
 - Registro de informações detalhadas  
 
 ### 📊 Indicadores
 - Estrutura preparada para futura implementação  
-- Base para cálculo de KPIs  
+- Base para cálculo de KPIs 
 
 ### 🔍 Consulta e Análise
 - Consulta de dados via API  
@@ -48,13 +49,13 @@ Projeto baseado em uma necessidade real do ambiente de trabalho, desenvolvido co
 
 ## 🛠️ Stack Tecnológica
 
-| Camada       | Tecnologia |
-|-------------|-----------|
-| Front-end   | HTML, CSS, JavaScript |
-| Back-end    | Node.js (Express) |
-| Banco       | Microsoft SQL Server |
-| IDE         | Visual Studio Code |
-| DB Tool     | SQL Server Management Studio (SSMS) |
+| Camada | Tecnologia |
+|--------|------------|
+| Front-end | HTML, CSS, JavaScript |
+| Back-end | Node.js (Express) |
+| Banco | Microsoft SQL Server |
+| IDE | Visual Studio Code |
+| DB Tool | SQL Server Management Studio (SSMS) |
 | Versionamento | Git + GitHub |
 
 ---
@@ -65,7 +66,6 @@ Projeto baseado em uma necessidade real do ambiente de trabalho, desenvolvido co
 - mssql  
 - dotenv  
 - cors  
-- nodemon (dev)  
 
 ---
 
@@ -79,8 +79,12 @@ src/
 │   └── ordersController.js
 ├── routes/
 │   └── ordersRoutes.js
-└── database/
-    └── connection.js
+├── middlewares/
+│   └── orderValidationMiddleware.js
+├── database/
+│   └── connection.js
+└── utils/
+    └── validateOrder.js
 ```
 
 ---
@@ -157,6 +161,11 @@ npm run dev
 
 ---
 
+### 🔹 Busca por ID
+**GET** `/orders/:id`
+
+---
+
 ### 🔹 Atualizar ordem de serviço
 **PUT** `/orders/:id`
 
@@ -167,40 +176,50 @@ npm run dev
 
 ---
 
+### ✅ Regras de Validação
+
+#### Campos obrigatórios para criação e atualização de ordens:
+
+* Sector
+* Local
+* Requester
+* Problem_description
+
+#### Regras atuais:
+
+* Todos devem existir
+* Todos devem ser texto
+* Nenhum pode estar vazio ou conter apenas espaços
+
+---
+
 ## 🧠 Arquitetura do Sistema
 
 Fluxo atual da aplicação:
 
 ```
-Route → Controller → Database
-```
-
-Ou de forma mais completa:
-
-```
-[ Client ]
-    ↓
-[ Routes ]
-    ↓
-[ Controllers ]
-    ↓
-[ Database (SQL Server) ]
+Route → Validation Middleware → Controller → Database
 ```
 
 ---
 
 ## 📊 Roadmap
 
-- [x] Estrutura inicial do projeto  
-- [x] Separação em camadas (Routes + Controllers)  
-- [x] Conexão com banco de dados  
-- [x] Inserção de dados via API  
-- [x] Listagem de dados via API  
-- [x] Atualização de registros (PUT)  
-- [x] Exclusão de registros (DELETE)  
-- [ ] Implementação de indicadores  
-- [ ] Autenticação (JWT)  
-- [ ] Documentação com Swagger  
+- [x] Estrutura inicial do projeto
+- [x] Separação em camadas (Routes + Controllers)
+- [x] Conexão com banco de dados
+- [x] Inserção de dados via API
+- [x] Listagem de dados via API
+- [x] Consulta por ID
+- [x] Atualização de registros (PUT)
+- [x] Exclusão de registros (DELETE)
+- [x] Validação manual de dados
+- [x] Variáveis de ambiente no código
+- [x] Refatoração da validação para middleware
+- [ ] Implementação de indicadores
+- [ ] Refatoração para camada de services
+- [ ] Autenticação (JWT)
+- [ ] Documentação com Swagger
 
 ---
 
