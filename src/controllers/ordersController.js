@@ -42,7 +42,7 @@ async function getOrders(req, res) {
 
   } catch (error) {
     console.error(error);
-    ser.status(500).send('Error fetching orders.');
+    res.status(500).send('Error fetching orders.');
   }
 }
 

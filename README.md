@@ -13,7 +13,7 @@ Sistema integrado para gerenciamento de **ordens de serviço** e registro de **i
 
 A aplicação simula um ambiente corporativo real, permitindo o controle completo das atividades operacionais e o monitoramento de desempenho por meio de indicadores (KPIs).
 
-Peguei uma necessidade real da empresa que trabalho e decidi criar a solução.
+Projeto baseado em uma necessidade real do ambiente de trabalho, desenvolvido como solução prática e evolutiva.
 
 ---
 
@@ -31,7 +31,9 @@ Peguei uma necessidade real da empresa que trabalho e decidi criar a solução.
 ### 🛠️ Ordens de Serviço
 - Cadastro de ordens via API  
 - Listagem de ordens  
-- Estrutura preparada para CRUD completo (Create, Read, Update, Delete)  
+- Atualização de ordens (PUT)  
+- Exclusão de ordens (DELETE)  
+- Estrutura completa de CRUD  
 - Registro de informações detalhadas  
 
 ### 📊 Indicadores
@@ -141,33 +143,27 @@ npm run dev
 ## 📡 Endpoints da API
 
 ### 🔹 Status da API
-
 **GET** `/`
-
-```
-API running 🚀
-```
 
 ---
 
 ### 🔹 Criar ordem de serviço
-
 **POST** `/orders`
-
-```
-{
-  "sector": "Produção",
-  "local": "Setor A",
-  "requester": "Claudiney",
-  "problem_description": "Máquina parada"
-}
-```
 
 ---
 
 ### 🔹 Listar ordens de serviço
-
 **GET** `/orders`
+
+---
+
+### 🔹 Atualizar ordem de serviço
+**PUT** `/orders/:id`
+
+---
+
+### 🔹 Deletar ordem de serviço
+**DELETE** `/orders/:id`
 
 ---
 
