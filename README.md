@@ -27,19 +27,18 @@ A aplicação simula um ambiente corporativo real, permitindo o controle complet
 ## ⚙️ Funcionalidades
 
 ### 🛠️ Ordens de Serviço
-- Cadastro de ordens  
-- Atualização de status  
+- Cadastro de ordens via API  
+- Listagem de ordens  
+- Estrutura preparada para CRUD completo (Create, Read, Update, Delete)  
 - Registro de informações detalhadas  
-- Histórico de atividades  
 
 ### 📊 Indicadores
-- Registro de dados de produção e qualidade  
-- Estrutura para cálculo de KPIs  
-- Base para dashboards  
+- Estrutura preparada para futura implementação  
+- Base para cálculo de KPIs  
 
 ### 🔍 Consulta e Análise
-- Filtros por status, setor e período  
-- Visualização de dados históricos  
+- Consulta de dados via API  
+- Base para filtros e análises futuras  
 
 ---
 
@@ -62,6 +61,7 @@ A aplicação simula um ambiente corporativo real, permitindo o controle complet
 - mssql  
 - dotenv  
 - cors  
+- nodemon (dev)  
 
 ---
 
@@ -72,7 +72,9 @@ src/
 │
 ├── app.js
 ├── controllers/
+│   └── ordersController.js
 ├── routes/
+│   └── ordersRoutes.js
 └── database/
     └── connection.js
 ```
@@ -120,14 +122,16 @@ npm install
 
 ### 4. Executar o projeto
 
+Modo padrão:
+
 ```
 npm start
 ```
 
-ou (modo desenvolvimento com auto-reload):
+Modo desenvolvimento (auto-reload):
 
 ```
-npx nodemon src/app.js
+npm run dev
 ```
 
 ---
@@ -167,12 +171,22 @@ API running 🚀
 
 ## 🧠 Arquitetura do Sistema
 
+Fluxo atual da aplicação:
+
 ```
-[ Front-end ]
-      ↓
-[ API Node.js (Express) ]
-      ↓
-[ SQL Server ]
+Route → Controller → Database
+```
+
+Ou de forma mais completa:
+
+```
+[ Client ]
+    ↓
+[ Routes ]
+    ↓
+[ Controllers ]
+    ↓
+[ Database (SQL Server) ]
 ```
 
 ---
@@ -180,11 +194,13 @@ API running 🚀
 ## 📊 Roadmap
 
 - [x] Estrutura inicial do projeto  
+- [x] Separação em camadas (Routes + Controllers)  
 - [x] Conexão com banco de dados  
 - [x] Inserção de dados via API  
-- [ ] Consulta avançada  
-- [ ] Atualização e exclusão de registros  
-- [ ] Dashboard de indicadores  
+- [x] Listagem de dados via API  
+- [x] Atualização de registros (PUT)  
+- [ ] Exclusão de registros (DELETE)  
+- [ ] Implementação de indicadores  
 - [ ] Autenticação (JWT)  
 - [ ] Documentação com Swagger  
 

@@ -61,8 +61,42 @@ async function getOrderById(req, res) {
   }
 }
 
+// UPDATE order
+async function updateOrder(req, res) {
+  try {
+    const { id } = req.params;
+    const {
+      sector,
+      local,
+      requester,
+      problem_description
+    } = req.body;
+
+    const result = await sql.query`
+    UPDATE service_orders
+    SET
+      sector = ${sector},
+      local = ${local},
+      requester = ${requester},
+      problem_description = ${problem_description}
+    WHERE id = ${id}
+    `;
+
+    if (result.rowsAffected[0] === 0) {
+      return res.status(404).send('Order not found.');
+    }
+
+    res.send('Order updated successfully ✅');
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error updating order.');
+  }
+}
+
 module.exports = {
   createOrder,
   getOrders,
-  getOrderById
+  getOrderById,
+  updateOrder
 };
