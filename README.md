@@ -13,6 +13,8 @@ Sistema integrado para gerenciamento de **ordens de serviço** e registro de **i
 
 A aplicação simula um ambiente corporativo real, permitindo o controle completo das atividades operacionais e o monitoramento de desempenho por meio de indicadores (KPIs).
 
+Peguei uma necessidade real da empresa que trabalho e decidi criar a solução.
+
 ---
 
 ## 🎯 Objetivos

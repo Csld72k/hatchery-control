@@ -94,9 +94,31 @@ async function updateOrder(req, res) {
   }
 }
 
+// DELETE order
+async function deleteOrder(req, res) {
+  try {
+    const { id } = req.params;
+    const result = await sql.query`
+    DELETE FROM service_orders
+    WHERE id = ${id}
+    `;
+
+    if (result.rowsAffected[0] === 0) {
+      return res.status(404).send('Order not found.');
+    }
+
+    res.send('Order deleted successfully 🗑️');
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error deleting order.');
+  }
+}
+
 module.exports = {
   createOrder,
   getOrders,
   getOrderById,
-  updateOrder
+  updateOrder,
+  deleteOrder
 };
