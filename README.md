@@ -221,6 +221,7 @@ Route → Validation Middleware → Controller → Service → Database
 - [x] Variáveis de ambiente no código
 - [x] Refatoração da validação para middleware
 - [x] Refatoração para camada de services
+- [x] Padronização das respostas em JSON
 - [ ] Implementação de indicadores
 - [ ] Autenticação (JWT)
 - [ ] Documentação com Swagger

@@ -7,11 +7,11 @@ async function createOrder(req, res) {
 
     await createOrderService({ sector, local, requester, problem_description });
 
-    res.status(201).send('Order saved successfully ✅.');
+    res.status(201).json({ message: 'Order saved successfully ✅.' });
 
   } catch (error) {
     console.error(error);
-    res.status(500).send('Error saving order.');
+    res.status(500).json({ error: 'Error saving order.' });
   }
 
 }
@@ -21,11 +21,11 @@ async function getOrders(req, res) {
   try {
     const orders = await getOrdersService();
 
-    res.json(orders);
+    res.status(200).json({ message: 'Orders fetched successfully.', data: orders });
 
   } catch (error) {
     console.error(error);
-    res.status(500).send('Error fetching orders.');
+    res.status(500).json({ message: 'Error fetching orders.' });
   }
 }
 
@@ -37,14 +37,14 @@ async function getOrderById(req, res) {
     const order = await getOrderByIdService(id);
 
     if (!order) {
-      return res.status(404).send('Order not found.');
+      return res.status(404).json({ message: 'Order not found.' });
     }
 
-    res.json(order);
+    res.status(200).json({ message: 'Order fetched successfully.', data: order });
 
   } catch (error) {
     console.error(error);
-    res.status(500).send('Error fetching order.');
+    res.status(500).json({ message: 'Error fetching order.' });
   }
 }
 
@@ -57,14 +57,14 @@ async function updateOrder(req, res) {
     const rowsAffected = await updateOrderService(id, { sector, local, requester, problem_description });
 
     if (rowsAffected === 0) {
-      return res.status(404).send('Order not found.');
+      return res.status(404).json({ message: 'Order not found.' });
     }
 
-    res.send('Order updated successfully ✅.');
+    res.json({ message: 'Order updated successfully ✅.' });
 
   } catch (error) {
     console.error(error);
-    res.status(500).send('Error updating order.');
+    res.status(500).json({ error: 'Error updating order.' });
   }
 }
 
@@ -78,11 +78,11 @@ async function deleteOrder(req, res) {
       return res.status(404).send('Order not found.');
     }
 
-    res.send('Order deleted successfully 🗑️.');
+    res.json({ message: 'Order deleted successfully 🗑️.' });
 
   } catch (error) {
     console.error(error);
-    res.status(500).send('Error deleting order.');
+    res.status(500).json({ error: 'Error deleting order.' });
   }
 }
 
