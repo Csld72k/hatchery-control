@@ -36,6 +36,9 @@ Projeto baseado em uma necessidade real do ambiente de trabalho, desenvolvido co
 - Exclusão de ordens  
 - Validação de campos obrigatórios via middleware  
 - Separação da lógica de negócio em camada de services  
+- Padronização das respostas da API em JSON  
+- Tratamento global para rotas não encontradas  
+- Estrutura preparada para tratamento centralizado de erros  
 - Registro de informações detalhadas  
 
 ### 📊 Indicadores
@@ -82,7 +85,9 @@ src/
 ├── routes/
 │   └── ordersRoutes.js
 ├── middlewares/
-│   └── orderValidationMiddleware.js
+│   ├── orderValidationMiddleware.js
+│   ├── notFoundMiddleware.js
+│   └── errorHandlerMiddleware.js
 ├── services/
 │   └── ordersService.js
 ├── database/
@@ -203,6 +208,38 @@ Fluxo atual da aplicação:
 
 ```
 Route → Validation Middleware → Controller → Service → Database
+                         ↓
+               Not Found / Error Handler
+```
+
+---
+
+
+## 📊 Padrão de Resposta da API
+
+### Sucesso simples
+
+```
+{
+  "message": "Order saved successfully."
+}
+```
+
+### Sucesso com dados
+
+```
+{
+  "message": "Orders fetched successfully.",
+  "data": []
+}
+```
+
+### Erro
+
+```
+{
+  "message": "Order not found."
+}
 ```
 
 ---
@@ -222,6 +259,8 @@ Route → Validation Middleware → Controller → Service → Database
 - [x] Refatoração da validação para middleware
 - [x] Refatoração para camada de services
 - [x] Padronização das respostas em JSON
+- [x] Tratamento global para rotas não encontradas
+- [x] Estrutura inicial para tratamento centralizado de erros
 - [ ] Implementação de indicadores
 - [ ] Autenticação (JWT)
 - [ ] Documentação com Swagger

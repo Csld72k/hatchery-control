@@ -75,10 +75,10 @@ async function deleteOrder(req, res) {
     const rowsAffected = await deleteOrderService(id);
 
     if (rowsAffected === 0) {
-      return res.status(404).send('Order not found.');
+      return res.status(404).json({ message: 'Order not found.' });
     }
 
-    res.json({ message: 'Order deleted successfully 🗑️.' });
+    res.status(200).json({ message: 'Order deleted successfully 🗑️.' });
 
   } catch (error) {
     console.error(error);
