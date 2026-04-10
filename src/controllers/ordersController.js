@@ -11,7 +11,7 @@ async function createOrder(req, res) {
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error saving order.' });
+    res.status(500).json({ message: 'Error saving order.' });
   }
 
 }
@@ -64,7 +64,7 @@ async function updateOrder(req, res) {
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error updating order.' });
+    res.status(500).json({ message: 'Error updating order.' });
   }
 }
 
@@ -82,7 +82,7 @@ async function deleteOrder(req, res) {
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error deleting order.' });
+    res.status(500).json({ message: 'Error deleting order.' });
   }
 }
 

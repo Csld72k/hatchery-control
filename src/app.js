@@ -2,6 +2,7 @@ const express = require('express');
 require('dotenv').config();
 
 const app = express();
+
 const { connectDB } = require('./database/connection');
 const ordersRoutes = require('./routes/ordersRoutes');
 const notFoundMiddleware = require('./middlewares/notFoundMiddleware');
@@ -14,7 +15,7 @@ app.use(express.json());
 
 // Initial route
 app.get('/', (req, res) => {
-  res.send('API running 🚀');
+  res.status(200).json({ message: 'API running 🚀' });
 });
 
 // Orders routes
