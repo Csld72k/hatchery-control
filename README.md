@@ -35,6 +35,7 @@ Projeto baseado em uma necessidade real do ambiente de trabalho, desenvolvido co
 - Atualização de ordens  
 - Exclusão de ordens  
 - Validação de campos obrigatórios via middleware  
+- Validação do parâmetro `id` nas rotas  
 - Separação da lógica de negócio em camada de services  
 - Padronização das respostas da API em JSON  
 - Tratamento global para rotas não encontradas  
@@ -86,6 +87,7 @@ src/
 │   └── ordersRoutes.js
 ├── middlewares/
 │   ├── orderValidationMiddleware.js
+│   ├── validateIdMiddleware.js
 │   ├── notFoundMiddleware.js
 │   └── errorHandlerMiddleware.js
 ├── services/
@@ -199,6 +201,7 @@ npm run dev
 * Todos devem existir
 * Todos devem ser texto
 * Nenhum pode estar vazio ou conter apenas espaços
+* O parâmetro **id** deve ser um número inteiro positivo
 
 ---
 
@@ -207,9 +210,9 @@ npm run dev
 Fluxo atual da aplicação:
 
 ```
-Route → Validation Middleware → Controller → Service → Database
-                         ↓
-               Not Found / Error Handler
+Route → ID Validation Middleware → Body Validation Middleware → Controller → Service → Database
+                                                    ↓
+                                          Not Found / Error Handler
 ```
 
 ---
@@ -261,6 +264,7 @@ Route → Validation Middleware → Controller → Service → Database
 - [x] Padronização das respostas em JSON
 - [x] Tratamento global para rotas não encontradas
 - [x] Estrutura inicial para tratamento centralizado de erros
+- [x] Validação do parâmetro ID nas rotas
 - [ ] Implementação de indicadores
 - [ ] Autenticação (JWT)
 - [ ] Documentação com Swagger
