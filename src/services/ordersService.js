@@ -7,10 +7,28 @@ async function createOrderService({ sector, local, requester, problem_descriptio
   `;
 }
 
-async function getOrdersService() {
-  const result = await sql.query`
-  SELECT * FROM service_orders
-  `;
+async function getOrdersService(filters = {}) {
+  const { sector, requester, local } = filters;
+
+  let query = 'SELECT * FROM service_orders WHERE 1=1';
+  const request = new sql.Request();
+
+  if (sector) {
+    query += 'AND sector LIKE @sector';
+    request.input('sector', sql.VarChar, `%${sector}%`);
+  }
+
+  if (requester) {
+    query += 'AND requester LIKE @requester';
+    request.input('requester', sql.VarChar, `%${requester}%`);
+  }
+
+  if (local) {
+    query += ' AND local lIKE @local';
+    request.input('local', sql.VarChar, `%${local}%`);
+  }
+
+  const result = await request.query(query);
 
   return result.recordset;
 }

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const ordersController = require('../controllers/ordersController');
 const orderValidationMiddleware = require('../middlewares/orderValidationMiddleware');
-const validateIdMiddleware = require('../middlewares/validadeIdMiddleware');
+const validateIdMiddleware = require('../middlewares/validateIdMiddleware');
 
 router.post('/orders', orderValidationMiddleware, ordersController.createOrder);
 router.get('/orders', ordersController.getOrders);

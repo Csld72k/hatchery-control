@@ -19,7 +19,9 @@ async function createOrder(req, res) {
 // GET orders
 async function getOrders(req, res) {
   try {
-    const orders = await getOrdersService();
+    const filters = req.query; // Get filters from query parameters
+
+    const orders = await getOrdersService(filters);
 
     res.status(200).json({ message: 'Orders fetched successfully.', data: orders });
 

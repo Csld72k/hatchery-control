@@ -34,6 +34,7 @@ Projeto baseado em uma necessidade real do ambiente de trabalho, desenvolvido co
 - Consulta por ID  
 - Atualização de ordens  
 - Exclusão de ordens  
+- Filtros por query params  
 - Validação de campos obrigatórios via middleware  
 - Validação do parâmetro `id` nas rotas  
 - Separação da lógica de negócio em camada de services  
@@ -48,6 +49,7 @@ Projeto baseado em uma necessidade real do ambiente de trabalho, desenvolvido co
 
 ### 🔍 Consulta e Análise
 - Consulta de dados via API  
+- Filtros por setor, solicitante e local  
 - Base para filtros e análises futuras  
 
 ---
@@ -77,7 +79,7 @@ Projeto baseado em uma necessidade real do ambiente de trabalho, desenvolvido co
 
 ## 🧱 Estrutura do Projeto
 
-```
+```text
 src/
 │
 ├── app.js
@@ -104,7 +106,7 @@ src/
 
 Crie um arquivo `.env` na raiz do projeto:
 
-```
+```env
 PORT=3000
 DB_SERVER=localhost
 DB_DATABASE=hatchery_control
@@ -122,8 +124,6 @@ DB_PASSWORD=sua_senha
 git clone https://github.com/Csld72k/hatchery-control.git
 ```
 
----
-
 ### 2. Instalar dependências
 
 ```
@@ -135,7 +135,7 @@ npm install
 ### 3. Configurar banco de dados
 
 - Criar o banco no SQL Server  
-- Atualizar as credenciais no `.env` ou no `connection.js`
+- Atualizar as credenciais no `.env`
 
 ---
 
@@ -147,7 +147,7 @@ Modo padrão:
 npm start
 ```
 
-Modo desenvolvimento (auto-reload):
+Modo desenvolvimento:
 
 ```
 npm run dev
@@ -160,56 +160,66 @@ npm run dev
 ### 🔹 Status da API
 **GET** `/`
 
----
-
 ### 🔹 Criar ordem de serviço
 **POST** `/orders`
-
----
 
 ### 🔹 Listar ordens de serviço
 **GET** `/orders`
 
----
+### 🔹 Listar ordens com filtros
+**GET** `/orders?sector=Maintenance&requester=Claudiney&local=Room%201`
 
-### 🔹 Busca por ID
+### 🔹 Buscar por ID
 **GET** `/orders/:id`
-
----
 
 ### 🔹 Atualizar ordem de serviço
 **PUT** `/orders/:id`
-
----
 
 ### 🔹 Deletar ordem de serviço
 **DELETE** `/orders/:id`
 
 ---
 
-### ✅ Regras de Validação
+## ✅ Regras de Validação
 
-#### Campos obrigatórios para criação e atualização de ordens:
+### Campos obrigatórios para criação e atualização de ordens:
 
-* Sector
-* Local
-* Requester
-* Problem_description
+- `sector`
+- `local`
+- `requester`
+- `problem_description`
 
-#### Regras atuais:
+### Regras atuais:
 
-* Todos devem existir
-* Todos devem ser texto
-* Nenhum pode estar vazio ou conter apenas espaços
-* O parâmetro **id** deve ser um número inteiro positivo
+- todos devem existir  
+- todos devem ser texto  
+- nenhum pode estar vazio ou conter apenas espaços  
+- o parâmetro `id` deve ser um número inteiro positivo  
+
+---
+
+## 🔎 Filtros disponíveis
+
+Na rota `GET /orders`, você pode usar:
+
+- `sector`
+- `requester`
+- `local`
+
+Exemplo:
+
+```
+/orders?sector=Maintenance
+/orders?requester=Claudiney
+/orders?local=Room 1
+/orders?sector=Maintenance&requester=Claudiney
+```
 
 ---
 
 ## 🧠 Arquitetura do Sistema
 
-Fluxo atual da aplicação:
-
-```
+```text
 Route → ID Validation Middleware → Body Validation Middleware → Controller → Service → Database
                                                     ↓
                                           Not Found / Error Handler
@@ -217,20 +227,17 @@ Route → ID Validation Middleware → Body Validation Middleware → Controller
 
 ---
 
-
 ## 📊 Padrão de Resposta da API
 
 ### Sucesso simples
-
-```
+```json
 {
   "message": "Order saved successfully."
 }
 ```
 
 ### Sucesso com dados
-
-```
+```json
 {
   "message": "Orders fetched successfully.",
   "data": []
@@ -238,11 +245,30 @@ Route → ID Validation Middleware → Body Validation Middleware → Controller
 ```
 
 ### Erro
-
-```
+```json
 {
   "message": "Order not found."
 }
+```
+
+---
+
+## 🗄️ Melhorias no Banco de Dados
+
+Sugestões implementadas ou preparadas para implementação:
+
+- índice para `sector`
+- índice para `requester`
+- índice para `local`
+- possibilidade de filtro com `LIKE`
+- base pronta para adicionar `status`, `priority` e datas de controle
+
+Exemplo de índices no SQL Server:
+
+```sql
+CREATE INDEX idx_service_orders_sector ON service_orders(sector);
+CREATE INDEX idx_service_orders_requester ON service_orders(requester);
+CREATE INDEX idx_service_orders_local ON service_orders(local);
 ```
 
 ---
@@ -265,6 +291,7 @@ Route → ID Validation Middleware → Body Validation Middleware → Controller
 - [x] Tratamento global para rotas não encontradas
 - [x] Estrutura inicial para tratamento centralizado de erros
 - [x] Validação do parâmetro ID nas rotas
+- [x] Filtros via query params
 - [ ] Implementação de indicadores
 - [ ] Autenticação (JWT)
 - [ ] Documentação com Swagger
