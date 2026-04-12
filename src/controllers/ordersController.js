@@ -3,9 +3,9 @@ const { createOrderService, getOrdersService, getOrderByIdService, updateOrderSe
 // Create order
 async function createOrder(req, res) {
   try {
-    const { sector, local, requester, problem_description } = req.body;
+    const { sector, local, requester, problem_description, status, priority, type, request_date } = req.body;
 
-    await createOrderService({ sector, local, requester, problem_description });
+    await createOrderService({ sector, local, requester, problem_description, status, priority, type, request_date });
 
     res.status(201).json({ message: 'Order saved successfully ✅.' });
 
@@ -54,9 +54,9 @@ async function getOrderById(req, res) {
 async function updateOrder(req, res) {
   try {
     const { id } = req.params;
-    const { sector, local, requester, problem_description } = req.body;
+    const { sector, local, requester, problem_description, status, priority, type, request_date } = req.body;
 
-    const rowsAffected = await updateOrderService(id, { sector, local, requester, problem_description });
+    const rowsAffected = await updateOrderService(id, { sector, local, requester, problem_description, status, priority, type, request_date });
 
     if (rowsAffected === 0) {
       return res.status(404).json({ message: 'Order not found.' });
@@ -87,9 +87,6 @@ async function deleteOrder(req, res) {
     res.status(500).json({ message: 'Error deleting order.' });
   }
 }
-
-// Validate order data
-
 
 module.exports = {
   createOrder,

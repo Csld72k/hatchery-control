@@ -1,15 +1,33 @@
 const { sql } = require('../database/connection');
 
-async function createOrderService({ sector, local, requester, problem_description }) {
+async function createOrderService({ sector, local, requester, problem_description, status, priority, type, request_date }) {
   await sql.query`
-  INSERT INTO service_orders (sector, local, requester, problem_description)
-  VALUES (${sector},  ${local}, ${requester}, ${problem_description})
+  INSERT INTO service_orders (
+  sector,
+  local,
+  requester,
+  problem_description,
+  status,
+  priority,
+  type,
+  request_date
+  )
+  VALUES (
+  ${sector},
+  ${local},
+  ${requester},
+  ${problem_description},
+  ${status},
+  ${priority},
+  ${type},
+  ${request_date}
+  )
   `;
 }
 
 // Get orders with optional filters
 async function getOrdersService(filters = {}) {
-  const { sector, requester, local, sortBy = 'id', order = 'asc' } = filters;
+  const { sector, requester, local, status, priority, type, sortBy = 'id', order = 'asc' } = filters;
 
   const allowedSortFields = ['id', 'request_date'];
   const allowedOrderValues = ['asc', 'desc'];
@@ -35,6 +53,21 @@ async function getOrdersService(filters = {}) {
     request.input('local', sql.VarChar, `%${local}%`);
   }
 
+  if (status) {
+    query += ' AND status LIKE @status'
+    request.input('status', sql.VarChar, `%${status}%`);
+  }
+
+  if (priority) {
+    query += ' AND priority LIKE @priority';
+    request.input('priority', sql.VarChar, `%${priority}%`);
+  }
+
+  if (type) {
+    query += ' AND type LIKE @type';
+    request.input('type', sql.VarChar, `%${type}%`);
+  }
+
   query += ` ORDER BY ${safeSortBy} ${safeOrder}`;
 
   const result = await request.query(query);
@@ -51,14 +84,19 @@ async function getOrderByIdService(id) {
   return result.recordset[0];
 }
 
-async function updateOrderService(id, { sector, local, requester, problem_description }) {
+async function updateOrderService(id, { sector, local, requester, problem_description, status, priority, type, request_date
+}) {
   const result = await sql.query`
   UPDATE service_orders
   SET
     sector = ${sector},
     local = ${local},
     requester = ${requester},
-    problem_description = ${problem_description}
+    problem_description = ${problem_description},
+    status = ${status || null},
+    priority = ${priority || null},
+    type = ${type || null},
+    request_date = ${request_date || null}
   WHERE id = ${id}
   `;
 
