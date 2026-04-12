@@ -17,10 +17,10 @@ async function createOrderService({ sector, local, requester, problem_descriptio
   ${local},
   ${requester},
   ${problem_description},
-  ${status},
-  ${priority},
-  ${type},
-  ${request_date}
+  ${status || null},
+  ${priority || null},
+  ${type || null},
+  ${request_date || null}
   )
   `;
 }

@@ -36,6 +36,7 @@ Projeto baseado em uma necessidade real do ambiente de trabalho, desenvolvido co
 - Exclusão de ordens  
 - Filtros por query params  
 - Ordenação por query params  
+- Expansão do modelo com `status`, `priority`, `type` e `request_date`
 - Validação de campos obrigatórios via middleware  
 - Validação do parâmetro `id` nas rotas  
 - Separação da lógica de negócio em camada de services  
@@ -50,7 +51,7 @@ Projeto baseado em uma necessidade real do ambiente de trabalho, desenvolvido co
 
 ### 🔍 Consulta e Análise
 - Consulta de dados via API  
-- Filtros por setor, solicitante e local  
+- Filtros por setor, solicitante, local, status e prioridade  
 - Ordenação por ID e data de solicitação  
 - Base para filtros e análises futuras  
 
@@ -165,7 +166,7 @@ npm run dev
 **GET** `/orders`
 
 ### 🔹 Listar ordens com filtros e ordenação
-**GET** `/orders?sector=Maintenance&requester=Claudiney&sortBy=id&order=desc`
+**GET** `/orders?sector=Maintenance&status=Open&sortBy=request_date&order=desc`
 
 ### 🔹 Buscar por ID
 **GET** `/orders/:id`
@@ -178,18 +179,44 @@ npm run dev
 
 ---
 
+## 📝 Exemplo de payload
+
+### POST /orders
+
+```json
+{
+  "sector": "Maintenance",
+  "local": "Room 1",
+  "requester": "Claudiney",
+  "problem_description": "Fix lamp",
+  "status": "Open",
+  "priority": "High",
+  "type": "Electrical",
+  "request_date": "2026-04-11"
+}
+```
+
+---
+
 ## ✅ Regras de Validação
 
-### Campos obrigatórios para criação e atualização de ordens:
+### Campos obrigatórios:
 - `sector`
 - `local`
 - `requester`
 - `problem_description`
 
+### Campos opcionais:
+- `status`
+- `priority`
+- `type`
+- `request_date`
+
 ### Regras atuais:
-- todos devem existir  
-- todos devem ser texto  
-- nenhum pode estar vazio ou conter apenas espaços  
+- campos obrigatórios devem existir  
+- campos de texto devem ser strings válidas  
+- nenhum campo obrigatório pode estar vazio ou conter apenas espaços  
+- `request_date`, quando enviada, deve estar no formato `YYYY-MM-DD`  
 - o parâmetro `id` deve ser um número inteiro positivo  
 
 ---
@@ -201,6 +228,9 @@ Na rota `GET /orders`, você pode usar:
 - `sector`
 - `requester`
 - `local`
+- `status`
+- `priority`
+- `type`
 
 Exemplo:
 
@@ -208,7 +238,8 @@ Exemplo:
 /orders?sector=Maintenance
 /orders?requester=Claudiney
 /orders?local=Room 1
-/orders?sector=Maintenance&requester=Claudiney
+/orders?status=Open&priority=High
+/orders?type=Electrical
 ```
 
 ---
@@ -269,27 +300,25 @@ Route → ID Validation Middleware → Body Validation Middleware → Controller
 
 ## 🗄️ Melhorias no Banco de Dados
 
-Sugestões implementadas ou preparadas para implementação:
+### Evolução da tabela
 
-- índice para `sector`
-- índice para `requester`
-- índice para `local`
-- coluna `request_date` para ordenação temporal
-- base pronta para adicionar `status`, `priority` e `type`
+```sql
+ALTER TABLE service_orders ADD status VARCHAR(50) NULL;
+ALTER TABLE service_orders ADD priority VARCHAR(50) NULL;
+ALTER TABLE service_orders ADD type VARCHAR(50) NULL;
+ALTER TABLE service_orders ADD request_date DATE NULL;
+```
 
-Exemplo de índices no SQL Server:
+### Índices recomendados
 
 ```sql
 CREATE INDEX idx_service_orders_sector ON service_orders(sector);
 CREATE INDEX idx_service_orders_requester ON service_orders(requester);
 CREATE INDEX idx_service_orders_local ON service_orders(local);
+CREATE INDEX idx_service_orders_status ON service_orders(status);
+CREATE INDEX idx_service_orders_priority ON service_orders(priority);
+CREATE INDEX idx_service_orders_type ON service_orders(type);
 CREATE INDEX idx_service_orders_request_date ON service_orders(request_date);
-```
-
-Exemplo de evolução da tabela:
-
-```sql
-ALTER TABLE service_orders ADD request_date DATE NULL;
 ```
 
 ---
@@ -314,7 +343,7 @@ ALTER TABLE service_orders ADD request_date DATE NULL;
 - [x] Validação do parâmetro ID nas rotas
 - [x] Filtros via query params
 - [x] Ordenação via query params
-- [ ] Expansão do modelo de ordens
+- [x] Expansão do modelo de ordens
 - [ ] Implementação de indicadores
 - [ ] Autenticação (JWT)
 - [ ] Documentação com Swagger
