@@ -54,7 +54,7 @@ async function getOrdersService(filters = {}) {
   }
 
   if (status) {
-    query += ' AND status LIKE @status'
+    query += ' AND status LIKE @status';
     request.input('status', sql.VarChar, `%${status}%`);
   }
 
@@ -118,4 +118,4 @@ module.exports = {
   getOrderByIdService,
   updateOrderService,
   deleteOrderService
-}
+};
