@@ -35,6 +35,7 @@ Projeto baseado em uma necessidade real do ambiente de trabalho, desenvolvido co
 - Atualização de ordens  
 - Exclusão de ordens  
 - Filtros por query params  
+- Ordenação por query params  
 - Validação de campos obrigatórios via middleware  
 - Validação do parâmetro `id` nas rotas  
 - Separação da lógica de negócio em camada de services  
@@ -50,6 +51,7 @@ Projeto baseado em uma necessidade real do ambiente de trabalho, desenvolvido co
 ### 🔍 Consulta e Análise
 - Consulta de dados via API  
 - Filtros por setor, solicitante e local  
+- Ordenação por ID e data de solicitação  
 - Base para filtros e análises futuras  
 
 ---
@@ -120,36 +122,32 @@ DB_PASSWORD=sua_senha
 
 ### 1. Clonar o repositório
 
-```
+```bash
 git clone https://github.com/Csld72k/hatchery-control.git
 ```
 
 ### 2. Instalar dependências
 
-```
+```bash
 npm install
 ```
-
----
 
 ### 3. Configurar banco de dados
 
 - Criar o banco no SQL Server  
 - Atualizar as credenciais no `.env`
 
----
-
 ### 4. Executar o projeto
 
 Modo padrão:
 
-```
+```bash
 npm start
 ```
 
 Modo desenvolvimento:
 
-```
+```bash
 npm run dev
 ```
 
@@ -166,8 +164,8 @@ npm run dev
 ### 🔹 Listar ordens de serviço
 **GET** `/orders`
 
-### 🔹 Listar ordens com filtros
-**GET** `/orders?sector=Maintenance&requester=Claudiney&local=Room%201`
+### 🔹 Listar ordens com filtros e ordenação
+**GET** `/orders?sector=Maintenance&requester=Claudiney&sortBy=id&order=desc`
 
 ### 🔹 Buscar por ID
 **GET** `/orders/:id`
@@ -183,14 +181,12 @@ npm run dev
 ## ✅ Regras de Validação
 
 ### Campos obrigatórios para criação e atualização de ordens:
-
 - `sector`
 - `local`
 - `requester`
 - `problem_description`
 
 ### Regras atuais:
-
 - todos devem existir  
 - todos devem ser texto  
 - nenhum pode estar vazio ou conter apenas espaços  
@@ -208,11 +204,29 @@ Na rota `GET /orders`, você pode usar:
 
 Exemplo:
 
-```
+```bash
 /orders?sector=Maintenance
 /orders?requester=Claudiney
 /orders?local=Room 1
 /orders?sector=Maintenance&requester=Claudiney
+```
+
+---
+
+## ↕️ Ordenação disponível
+
+Na rota `GET /orders`, você pode usar:
+
+- `sortBy=id`
+- `sortBy=request_date`
+- `order=asc`
+- `order=desc`
+
+Exemplo:
+
+```bash
+/orders?sortBy=id&order=desc
+/orders?sortBy=request_date&order=asc
 ```
 
 ---
@@ -260,8 +274,8 @@ Sugestões implementadas ou preparadas para implementação:
 - índice para `sector`
 - índice para `requester`
 - índice para `local`
-- possibilidade de filtro com `LIKE`
-- base pronta para adicionar `status`, `priority` e datas de controle
+- coluna `request_date` para ordenação temporal
+- base pronta para adicionar `status`, `priority` e `type`
 
 Exemplo de índices no SQL Server:
 
@@ -269,6 +283,13 @@ Exemplo de índices no SQL Server:
 CREATE INDEX idx_service_orders_sector ON service_orders(sector);
 CREATE INDEX idx_service_orders_requester ON service_orders(requester);
 CREATE INDEX idx_service_orders_local ON service_orders(local);
+CREATE INDEX idx_service_orders_request_date ON service_orders(request_date);
+```
+
+Exemplo de evolução da tabela:
+
+```sql
+ALTER TABLE service_orders ADD request_date DATE NULL;
 ```
 
 ---
@@ -292,6 +313,8 @@ CREATE INDEX idx_service_orders_local ON service_orders(local);
 - [x] Estrutura inicial para tratamento centralizado de erros
 - [x] Validação do parâmetro ID nas rotas
 - [x] Filtros via query params
+- [x] Ordenação via query params
+- [ ] Expansão do modelo de ordens
 - [ ] Implementação de indicadores
 - [ ] Autenticação (JWT)
 - [ ] Documentação com Swagger

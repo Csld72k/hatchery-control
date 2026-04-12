@@ -7,26 +7,35 @@ async function createOrderService({ sector, local, requester, problem_descriptio
   `;
 }
 
+// Get orders with optional filters
 async function getOrdersService(filters = {}) {
-  const { sector, requester, local } = filters;
+  const { sector, requester, local, sortBy = 'id', order = 'asc' } = filters;
+
+  const allowedSortFields = ['id', 'request_date'];
+  const allowedOrderValues = ['asc', 'desc'];
+
+  const safeSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'id';
+  const safeOrder = allowedOrderValues.includes(order.toLowerCase()) ? order.toLowerCase() : 'asc';
 
   let query = 'SELECT * FROM service_orders WHERE 1=1';
   const request = new sql.Request();
 
   if (sector) {
-    query += 'AND sector LIKE @sector';
+    query += ' AND sector LIKE @sector';
     request.input('sector', sql.VarChar, `%${sector}%`);
   }
 
   if (requester) {
-    query += 'AND requester LIKE @requester';
+    query += ' AND requester LIKE @requester';
     request.input('requester', sql.VarChar, `%${requester}%`);
   }
 
   if (local) {
-    query += ' AND local lIKE @local';
+    query += ' AND local LIKE @local';
     request.input('local', sql.VarChar, `%${local}%`);
   }
+
+  query += ` ORDER BY ${safeSortBy} ${safeOrder}`;
 
   const result = await request.query(query);
 
