@@ -48,6 +48,7 @@ Projeto baseado em uma necessidade real do ambiente de trabalho, desenvolvido co
 - Estrutura preparada para tratamento centralizado de erros  
 - Registro de informações detalhadas  
 - Base criada para suportar usuários, papéis e setores  
+- Remodelagem progressiva da tabela principal de ordens  
 
 ### 📊 Indicadores
 - Estrutura preparada para futura implementação  
@@ -138,6 +139,11 @@ src/
 │   └── connection.js
 └── utils/
     └── validateOrder.js
+
+database/
+└── scripts/
+    ├── step23_users_roles_sector.sql
+    └── step24_service_orders_remodel.sql
 ```
 
 ---
@@ -173,6 +179,7 @@ npm install
 ### 3. Configurar banco de dados
 
 - Criar o banco no SQL Server  
+- Executar os scripts SQL de estrutura  
 - Atualizar as credenciais no `.env`
 
 ### 4. Executar o projeto
@@ -337,7 +344,7 @@ Route → ID Validation Middleware → Body Validation Middleware → Controller
 
 ## 🗄️ Banco de Dados
 
-### Estrutura atual planejada para base de usuários e permissões
+### Estrutura atual de usuários e permissões
 
 ```sql
 CREATE TABLE sectors (
@@ -371,7 +378,7 @@ CREATE TABLE user_roles (
 );
 ```
 
-### Evolução já feita na tabela de ordens
+### Evolução atual da tabela de ordens
 
 ```sql
 ALTER TABLE service_orders ADD status VARCHAR(50) NULL;
@@ -380,17 +387,28 @@ ALTER TABLE service_orders ADD type VARCHAR(50) NULL;
 ALTER TABLE service_orders ADD request_date DATE NULL;
 ```
 
-### Índices recomendados
+### Remodelagem planejada para `service_orders`
 
-```sql
-CREATE INDEX idx_service_orders_sector ON service_orders(sector);
-CREATE INDEX idx_service_orders_requester ON service_orders(requester);
-CREATE INDEX idx_service_orders_local ON service_orders(local);
-CREATE INDEX idx_service_orders_status ON service_orders(status);
-CREATE INDEX idx_service_orders_priority ON service_orders(priority);
-CREATE INDEX idx_service_orders_type ON service_orders(type);
-CREATE INDEX idx_service_orders_request_date ON service_orders(request_date);
-```
+A etapa 24 inicia a transição da tabela principal para suportar relacionamentos reais com usuários e setores sem quebrar o módulo atual.
+
+#### Novas colunas previstas:
+- `sector_id`
+- `requester_user_id`
+- `current_maintainer_user_id`
+- `service_description`
+- `solution_description`
+- `expected_date`
+- `completion_date`
+- `service_start_at`
+- `service_end_at`
+- `created_at`
+- `updated_at`
+
+#### Estratégia:
+- adicionar colunas novas sem apagar as antigas
+- preservar compatibilidade temporária com o backend atual
+- migrar dados aos poucos
+- só remover colunas legadas quando toda a aplicação estiver adaptada
 
 ---
 
