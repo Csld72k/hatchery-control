@@ -1,30 +1,65 @@
-const { createOrderService, getOrdersService, getOrderByIdService, updateOrderService, deleteOrderService } = require('../services/ordersService');
+const {
+  createOrderService,
+  getOrdersService,
+  getOrderByIdService,
+  updateOrderService,
+  deleteOrderService
+} = require('../services/ordersService');
 
 // Create order
 async function createOrder(req, res) {
   try {
-    const { sector, local, requester, problem_description, status, priority, type, request_date } = req.body;
+    const {
+      sector_id,
+      requester_user_id,
+      current_maintainer_user_id,
+      location,
+      service_description,
+      solution_description,
+      type,
+      priority,
+      status,
+      expected_date,
+      completion_date
+    } = req.body;
 
-    await createOrderService({ sector, local, requester, problem_description, status, priority, type, request_date });
+    await createOrderService({
+      sector_id: Number(sector_id),
+      requester_user_id: Number(requester_user_id),
+      current_maintainer_user_id:
+        current_maintainer_user_id === undefined ||
+          current_maintainer_user_id === null ||
+          current_maintainer_user_id === ''
+          ? null
+          : Number(current_maintainer_user_id),
+      location,
+      service_description,
+      solution_description,
+      type,
+      priority,
+      status,
+      expected_date,
+      completion_date
+    });
 
-    res.status(201).json({ message: 'Order saved successfully ✅.' });
-
+    res.status(201).json({ message: 'Order saved successfully.' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error saving order.' });
   }
-
 }
 
 // GET orders
 async function getOrders(req, res) {
   try {
-    const filters = req.query; // Get filters from query parameters
+    const filters = req.query;
 
     const orders = await getOrdersService(filters);
 
-    res.status(200).json({ message: 'Orders fetched successfully.', data: orders });
-
+    res.status(200).json({
+      message: 'Orders fetched successfully.',
+      data: orders
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error fetching orders.' });
@@ -42,8 +77,10 @@ async function getOrderById(req, res) {
       return res.status(404).json({ message: 'Order not found.' });
     }
 
-    res.status(200).json({ message: 'Order fetched successfully.', data: order });
-
+    res.status(200).json({
+      message: 'Order fetched successfully.',
+      data: order
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error fetching order.' });
@@ -54,16 +91,58 @@ async function getOrderById(req, res) {
 async function updateOrder(req, res) {
   try {
     const { id } = req.params;
-    const { sector, local, requester, problem_description, status, priority, type, request_date } = req.body;
 
-    const rowsAffected = await updateOrderService(id, { sector, local, requester, problem_description, status, priority, type, request_date });
+    const existingOrder = await getOrderByIdService(id);
+
+    if (!existingOrder) {
+      return res.status(404).json({ message: 'Order not found.' });
+    }
+
+    const {
+      sector_id,
+      requester_user_id,
+      current_maintainer_user_id,
+      location,
+      service_description,
+      solution_description,
+      type,
+      priority,
+      status,
+      expected_date,
+      completion_date
+    } = req.body;
+
+    const updatedOrderData = {
+      sector_id: Number(sector_id),
+      requester_user_id: Number(requester_user_id),
+      current_maintainer_user_id:
+        current_maintainer_user_id !== undefined
+          ? current_maintainer_user_id === null || current_maintainer_user_id === ''
+            ? null
+            : Number(current_maintainer_user_id)
+          : existingOrder.current_maintainer_user_id,
+      location,
+      service_description,
+      solution_description:
+        solution_description !== undefined
+          ? solution_description
+          : existingOrder.solution_description,
+      type: type !== undefined ? type : existingOrder.type,
+      priority,
+      status: status !== undefined ? status : existingOrder.status,
+      expected_date:
+        expected_date !== undefined ? expected_date : existingOrder.expected_date,
+      completion_date:
+        completion_date !== undefined ? completion_date : existingOrder.completion_date
+    };
+
+    const rowsAffected = await updateOrderService(id, updatedOrderData);
 
     if (rowsAffected === 0) {
       return res.status(404).json({ message: 'Order not found.' });
     }
 
-    res.json({ message: 'Order updated successfully ✅.' });
-
+    res.status(200).json({ message: 'Order updated successfully.' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error updating order.' });
@@ -80,8 +159,7 @@ async function deleteOrder(req, res) {
       return res.status(404).json({ message: 'Order not found.' });
     }
 
-    res.status(200).json({ message: 'Order deleted successfully 🗑️.' });
-
+    res.status(200).json({ message: 'Order deleted successfully.' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error deleting order.' });

@@ -1,40 +1,116 @@
+function isPositiveInteger(value) {
+  const parsedValue = Number(value);
+  return Number.isInteger(parsedValue) && parsedValue > 0;
+}
+
+function isValidDate(value) {
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  return typeof value === 'string' && dateRegex.test(value);
+}
+
 function validateOrder(data) {
-  const { sector, local, requester, problem_description, status, priority, type, request_date } = data;
+  const {
+    sector_id,
+    requester_user_id,
+    current_maintainer_user_id,
+    location,
+    service_description,
+    solution_description,
+    type,
+    priority,
+    status,
+    expected_date,
+    completion_date
+  } = data;
 
-  if (!sector || typeof sector !== 'string' || !sector.trim()) {
-    return 'The field "sector" is required and must be a valid text.';
+  const allowedPriorities = ['Baixa', 'Média', 'Alta'];
+  const allowedTypes = ['Corretiva', 'Preventiva'];
+  const allowedStatuses = [
+    'Aguardando resposta',
+    'Direcionado',
+    'Em execução',
+    'Pausado',
+    'Aguardando validação',
+    'Concluído',
+    'Cancelado'
+  ];
+
+  if (!isPositiveInteger(sector_id)) {
+    return 'The field "sector_id" is required and must be a positive integer.';
   }
 
-  if (!local || typeof local !== 'string' || !local.trim()) {
-    return 'The field "local" is required and must be a valid text.';
+  if (!isPositiveInteger(requester_user_id)) {
+    return 'The field "requester_user_id" is required and must be a positive integer.';
   }
 
-  if (!requester || typeof requester !== 'string' || !requester.trim()) {
-    return 'The field "requester" is required and must be a valid text.';
+  if (
+    current_maintainer_user_id !== undefined &&
+    current_maintainer_user_id !== null &&
+    current_maintainer_user_id !== '' &&
+    !isPositiveInteger(current_maintainer_user_id)
+  ) {
+    return 'The field "current_maintainer_user_id" must be a positive integer.';
   }
 
-  if (!problem_description || typeof problem_description !== 'string' || !problem_description.trim()) {
-    return 'The field "problem_description" is required and must be a valid text.';
+  if (!location || typeof location !== 'string' || !location.trim()) {
+    return 'The field "location" is required and must be a valid text.';
   }
 
-  if (status !== undefined && (typeof status !== 'string' || !status.trim())) {
-    return 'The field "status" must be a valid text.';
+  if (
+    !service_description ||
+    typeof service_description !== 'string' ||
+    !service_description.trim()
+  ) {
+    return 'The field "service_description" is required and must be a valid text.';
   }
 
-  if (priority !== undefined && (typeof priority !== 'string' || !priority.trim())) {
-    return 'The field "priority" must be a valid text.';
+  if (
+    solution_description !== undefined &&
+    solution_description !== null &&
+    solution_description !== '' &&
+    (typeof solution_description !== 'string' || !solution_description.trim())
+  ) {
+    return 'The field "solution_description" must be a valid text.';
   }
 
-  if (type !== undefined && (typeof type !== 'string' || !type.trim())) {
-    return 'The field "type" must be a valid text.';
+  if (!priority || typeof priority !== 'string' || !allowedPriorities.includes(priority.trim())) {
+    return 'The field "priority" is required and must be one of: Baixa, Média or Alta.';
   }
 
-  if (request_date !== undefined) {
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (
+    type !== undefined &&
+    type !== null &&
+    type !== '' &&
+    (typeof type !== 'string' || !allowedTypes.includes(type.trim()))
+  ) {
+    return 'The field "type" must be one of: Corretiva or Preventiva.';
+  }
 
-    if (typeof request_date !== 'string' || !dateRegex.test(request_date)) {
-      return 'The field "request_date" must be in the format YYYY-MM-DD.';
-    }
+  if (
+    status !== undefined &&
+    status !== null &&
+    status !== '' &&
+    (typeof status !== 'string' || !allowedStatuses.includes(status.trim()))
+  ) {
+    return 'The field "status" contains an invalid value.';
+  }
+
+  if (
+    expected_date !== undefined &&
+    expected_date !== null &&
+    expected_date !== '' &&
+    !isValidDate(expected_date)
+  ) {
+    return 'The field "expected_date" must be in the format YYYY-MM-DD.';
+  }
+
+  if (
+    completion_date !== undefined &&
+    completion_date !== null &&
+    completion_date !== '' &&
+    !isValidDate(completion_date)
+  ) {
+    return 'The field "completion_date" must be in the format YYYY-MM-DD.';
   }
 
   return null;
