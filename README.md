@@ -45,6 +45,7 @@ O projeto começou a partir de uma necessidade real do ambiente de trabalho e es
 - Estrutura preparada para tratamento centralizado de erros
 - Base criada para suportar usuários, papéis e setores
 - Modelo relacional consolidado para ordens de serviço
+- Estrutura inicial de histórico/auditoria para status, atribuições, remarcações, pausas e comentários
 
 ### 📊 Indicadores
 - Estrutura pausada temporariamente
@@ -54,6 +55,7 @@ O projeto começou a partir de uma necessidade real do ambiente de trabalho e es
 - Consulta de dados via API
 - Filtros por setor, solicitante, mantenedor, local, status, prioridade e tipo
 - Ordenação por ID, data da solicitação, data prevista, data de conclusão e data de criação
+- Base para rastreabilidade de eventos da ordem
 
 ---
 
@@ -136,12 +138,8 @@ src/
 
 database/
 └── scripts/
-    ├── step23_users_roles_sector.sql
-    ├── step24_service_orders_remodel.sql
-    ├── step25_service_orders_cleanup.sql
-    ├── step25_reset_and_seed.sql
     ├── step25_26_full_reset.sql
-    └── step26_seed_initial_date.sql
+    └── step27_service_order_history_tables.sql
 ```
 
 ---
@@ -183,14 +181,14 @@ Executar o script:
 database/scripts/step25_26_full_reset.sql
 ```
 
-Esse script:
-- remove as tabelas atuais do módulo
-- recria toda a estrutura principal
-- cria índices e constraints
-- insere os dados modelo iniciais
+#### Criar tabelas de histórico
+Após o full reset, executar:
 
-#### Scripts históricos de evolução
-Os scripts `step23` e `step24` foram mantidos no projeto como histórico de evolução da modelagem.
+```sql
+database/scripts/step27_service_order_history_tables.sql
+```
+
+Esse script cria as tabelas de auditoria do módulo de ordens.
 
 ### 4. Executar o projeto
 
@@ -381,39 +379,19 @@ Route → ID Validation Middleware → Body Validation Middleware → Controller
 
 ## 🗄️ Banco de Dados
 
-### Estrutura de usuários e permissões
+### Estrutura principal
+- `sectors`
+- `roles`
+- `users`
+- `user_roles`
+- `service_orders`
 
-```sql
-CREATE TABLE sectors (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    name VARCHAR(100) NOT NULL UNIQUE,
-    created_at DATETIME2 NOT NULL DEFAULT SYSDATETIME()
-);
-
-CREATE TABLE roles (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    name VARCHAR(50) NOT NULL UNIQUE
-);
-
-CREATE TABLE users (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    name VARCHAR(150) NOT NULL,
-    email VARCHAR(150) NOT NULL,
-    password_hash VARCHAR(255) NULL,
-    sector_id INT NULL,
-    is_active BIT NOT NULL DEFAULT 1,
-    created_at DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
-    CONSTRAINT FK_users_sector FOREIGN KEY (sector_id) REFERENCES sectors(id)
-);
-
-CREATE TABLE user_roles (
-    user_id INT NOT NULL,
-    role_id INT NOT NULL,
-    PRIMARY KEY (user_id, role_id),
-    CONSTRAINT FK_user_roles_user FOREIGN KEY (user_id) REFERENCES users(id),
-    CONSTRAINT FK_user_roles_role FOREIGN KEY (role_id) REFERENCES roles(id)
-);
-```
+### Tabelas de histórico/auditoria
+- `service_order_status_history`
+- `service_order_assignments`
+- `service_order_reschedules`
+- `service_order_pauses`
+- `service_order_comments`
 
 ### Modelo atual da tabela `service_orders`
 
@@ -441,18 +419,20 @@ Campos principais:
 - backend adaptado para o novo modelo
 - dados modelo reinseridos já no padrão novo
 - IDs relacionais agora fazem parte da estrutura principal das ordens
+- tabelas de histórico criadas separadamente para eventos repetíveis
 
 ---
 
-## 🧭 Próxima Evolução de Modelagem
+## 🕓 Histórico e Auditoria
 
-O módulo de ordens será expandido com tabelas de histórico / auditoria:
+Eventos repetíveis não ficam na tabela principal da ordem.
 
-- `service_order_status_history`
-- `service_order_assignments`
-- `service_order_reschedules`
-- `service_order_pauses`
-- `service_order_comments`
+### Exemplos
+- mudança de status → `service_order_status_history`
+- troca de mantenedor → `service_order_assignments`
+- remarcação de data prevista → `service_order_reschedules`
+- pausa de serviço → `service_order_pauses`
+- observações/comentários → `service_order_comments`
 
 ---
 
@@ -481,7 +461,8 @@ O módulo de ordens será expandido com tabelas de histórico / auditoria:
 - [x] Remodelagem da tabela principal `service_orders`
 - [x] Remoção de colunas legadas e adaptação do backend
 - [x] Reinserção de dados modelo coerentes com a nova modelagem
-- [ ] Criação das tabelas de histórico
+- [x] Criação das tabelas de histórico
+- [ ] Integração do backend com histórico/auditoria
 - [ ] Regras de negócio por perfil
 - [ ] Interface do módulo de ordens
 - [ ] Colocar o módulo em uso real na empresa
