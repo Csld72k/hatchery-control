@@ -8,11 +8,25 @@ function isValidDate(value) {
   return typeof value === 'string' && dateRegex.test(value);
 }
 
+function validateOptionalText(value, fieldName) {
+  if (
+    value !== undefined &&
+    value !== null &&
+    value !== '' &&
+    (typeof value !== 'string' || !value.trim())
+  ) {
+    return `The field "${fieldName}" must be a valid text`;
+  }
+
+  return null;
+}
+
 function validateOrder(data) {
   const {
     sector_id,
     requester_user_id,
     current_maintainer_user_id,
+    action_user_id,
     location,
     service_description,
     solution_description,
@@ -20,11 +34,24 @@ function validateOrder(data) {
     priority,
     status,
     expected_date,
-    completion_date
+    completion_date,
+    status_change_reason,
+    assignment_change_reason,
+    reschedule_reason,
+    pause_reason,
+    comment_type,
+    comment_text
   } = data;
 
-  const allowedPriorities = ['Baixa', 'Média', 'Alta'];
-  const allowedTypes = ['Corretiva', 'Preventiva'];
+  const allowedPriorities = [
+    'Baixa',
+    'Média',
+    'Alta'
+  ];
+  const allowedTypes = [
+    'Corretiva',
+    'Preventiva'
+  ];
   const allowedStatuses = [
     'Aguardando resposta',
     'Direcionado',
@@ -33,6 +60,12 @@ function validateOrder(data) {
     'Aguardando validação',
     'Concluído',
     'Cancelado'
+  ];
+  const allowedCommentTypes = [
+    'Solicitante',
+    'Encarregado',
+    'Mantenedor',
+    'Sistema'
   ];
 
   if (!isPositiveInteger(sector_id)) {
@@ -52,6 +85,15 @@ function validateOrder(data) {
     return 'The field "current_maintainer_user_id" must be a positive integer.';
   }
 
+  if (
+    action_user_id !== undefined &&
+    action_user_id !== null &&
+    action_user_id !== '' &&
+    !isPositiveInteger(action_user_id)
+  ) {
+    return `The field "action_user_id" must be a positive integer.`;
+  }
+
   if (!location || typeof location !== 'string' || !location.trim()) {
     return 'The field "location" is required and must be a valid text.';
   }
@@ -64,14 +106,15 @@ function validateOrder(data) {
     return 'The field "service_description" is required and must be a valid text.';
   }
 
-  if (
-    solution_description !== undefined &&
-    solution_description !== null &&
-    solution_description !== '' &&
-    (typeof solution_description !== 'string' || !solution_description.trim())
-  ) {
-    return 'The field "solution_description" must be a valid text.';
-  }
+  const optionalTextError =
+    validateOptionalText(solution_description, 'solution_description') ||
+    validateOptionalText(status_change_reason, 'status_change_reason') ||
+    validateOptionalText(assignment_change_reason, 'assignment_change_reason') ||
+    validateOptionalText(reschedule_reason, 'reschedule_reason') ||
+    validateOptionalText(pause_reason, 'pause_reason') ||
+    validateOptionalText(comment_text, 'comment_text');
+
+  if (optionalTextError) return optionalTextError;
 
   if (!priority || typeof priority !== 'string' || !allowedPriorities.includes(priority.trim())) {
     return 'The field "priority" is required and must be one of: Baixa, Média or Alta.';
@@ -111,6 +154,15 @@ function validateOrder(data) {
     !isValidDate(completion_date)
   ) {
     return 'The field "completion_date" must be in the format YYYY-MM-DD.';
+  }
+
+  if (
+    comment_type !== undefined &&
+    comment_type !== null &&
+    comment_type !== '' &&
+    !allowedCommentTypes.includes(comment_type)
+  ) {
+    return 'The field "comment_type" contains an invalid value.';
   }
 
   return null;

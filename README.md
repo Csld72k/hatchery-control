@@ -11,8 +11,6 @@
 
 Sistema para gerenciamento de **ordens de serviço** com foco em centralização de dados, rastreabilidade operacional e evolução para uso real na empresa.
 
-O projeto começou a partir de uma necessidade real do ambiente de trabalho e está sendo evoluído de forma prática, saindo de um CRUD simples para um modelo mais próximo de um fluxo operacional de manutenção.
-
 > **Prioridade atual:** concluir o módulo de **ordens de serviço** e colocá-lo em uso real na empresa antes de iniciar o desenvolvimento do módulo de indicadores.
 
 ---
@@ -23,7 +21,7 @@ O projeto começou a partir de uma necessidade real do ambiente de trabalho e es
 - Melhorar o controle e a rastreabilidade das atividades
 - Apoiar decisões baseadas em dados
 - Aplicar conceitos reais de desenvolvimento full stack
-- Evoluir o módulo de ordens de serviço para um fluxo operacional real com múltiplos perfis de usuário
+- Evoluir o módulo de ordens para um fluxo operacional real com múltiplos perfis de usuário
 
 ---
 
@@ -45,41 +43,25 @@ O projeto começou a partir de uma necessidade real do ambiente de trabalho e es
 - Estrutura preparada para tratamento centralizado de erros
 - Base criada para suportar usuários, papéis e setores
 - Modelo relacional consolidado para ordens de serviço
-- Estrutura inicial de histórico/auditoria para status, atribuições, remarcações, pausas e comentários
+- Estrutura de histórico/auditoria para status, atribuições, remarcações, pausas e comentários
+- Integração inicial do backend com histórico/auditoria
 
 ### 📊 Indicadores
 - Estrutura pausada temporariamente
 - Evolução futura após a conclusão do módulo de ordens de serviço
 
-### 🔍 Consulta e Análise
-- Consulta de dados via API
-- Filtros por setor, solicitante, mantenedor, local, status, prioridade e tipo
-- Ordenação por ID, data da solicitação, data prevista, data de conclusão e data de criação
-- Base para rastreabilidade de eventos da ordem
-
 ---
 
 ## 👥 Perfis de Usuário Planejados
 
-O sistema está sendo remodelado para suportar 4 perfis principais:
-
-1. **Solicitante (Requester)**  
-   Usuário que abre a ordem de serviço.
-
-2. **Encarregado de Manutenção (Maintenance Coordinator)**  
-   Responsável por direcionar a ordem ao mantenedor, definir previsão, alterar prioridade e acompanhar o fluxo.
-
-3. **Mantenedor (Maintainer)**  
-   Usuário que executa o serviço, registra solução, horários e andamento.
-
-4. **Supervisão / Gerência (Manager / Supervisor)**  
-   Perfil com acesso somente para consulta.
+1. **Solicitante (Requester)** — abre a ordem de serviço.
+2. **Encarregado de Manutenção (Maintenance Coordinator)** — direciona a ordem, define previsão, altera prioridade e acompanha o fluxo.
+3. **Mantenedor (Maintainer)** — executa o serviço, registra solução, horários e andamento.
+4. **Supervisão / Gerência (Manager / Supervisor)** — consulta as ordens sem editar.
 
 ---
 
 ## 🔄 Fluxo Planejado da Ordem de Serviço
-
-Fluxo principal previsto para o processo operacional:
 
 - `Aguardando resposta`
 - `Direcionado`
@@ -146,8 +128,6 @@ database/
 
 ## ⚙️ Variáveis de Ambiente
 
-Crie um arquivo `.env` na raiz do projeto:
-
 ```env
 PORT=3000
 DB_SERVER=localhost
@@ -174,31 +154,14 @@ npm install
 
 ### 3. Configurar banco de dados
 
-#### Opção recomendada para ambiente limpo
-Executar o script:
+Para ambiente limpo, execute:
 
 ```sql
 database/scripts/step25_26_full_reset.sql
-```
-
-#### Criar tabelas de histórico
-Após o full reset, executar:
-
-```sql
 database/scripts/step27_service_order_history_tables.sql
 ```
 
-Esse script cria as tabelas de auditoria do módulo de ordens.
-
 ### 4. Executar o projeto
-
-Modo padrão:
-
-```bash
-npm start
-```
-
-Modo desenvolvimento:
 
 ```bash
 npm run dev
@@ -208,26 +171,12 @@ npm run dev
 
 ## 📡 Endpoints da API
 
-### 🔹 Status da API
-**GET** `/`
-
-### 🔹 Criar ordem de serviço
-**POST** `/orders`
-
-### 🔹 Listar ordens de serviço
-**GET** `/orders`
-
-### 🔹 Listar ordens com filtros e ordenação
-**GET** `/orders?sector=Sala%20de%20ovos&status=Direcionado&sortBy=request_date&order=desc`
-
-### 🔹 Buscar por ID
-**GET** `/orders/:id`
-
-### 🔹 Atualizar ordem de serviço
-**PUT** `/orders/:id`
-
-### 🔹 Deletar ordem de serviço
-**DELETE** `/orders/:id`
+- **GET** `/`
+- **POST** `/orders`
+- **GET** `/orders`
+- **GET** `/orders/:id`
+- **PUT** `/orders/:id`
+- **DELETE** `/orders/:id`
 
 ---
 
@@ -249,17 +198,23 @@ npm run dev
 
 ```json
 {
+  "action_user_id": 2,
   "sector_id": 2,
   "requester_user_id": 3,
   "current_maintainer_user_id": 11,
+  "assignment_change_reason": "Direcionamento inicial da manutenção.",
   "location": "Máquina de classificação",
   "service_description": "Troca de correia do equipamento",
   "solution_description": "Correia substituída e equipamento testado.",
   "type": "Corretiva",
   "priority": "Alta",
   "status": "Em execução",
+  "status_change_reason": "Serviço iniciado pelo mantenedor.",
   "expected_date": "2026-04-15",
-  "completion_date": null
+  "reschedule_reason": "Aguardando liberação da linha.",
+  "completion_date": null,
+  "comment_type": "Encarregado",
+  "comment_text": "Prioridade mantida como alta."
 }
 ```
 
@@ -268,35 +223,45 @@ npm run dev
 ## ✅ Regras de Validação
 
 ### Campos obrigatórios no payload atual
+
 - `sector_id`
 - `requester_user_id`
 - `location`
 - `service_description`
 - `priority`
 
+### Campo obrigatório para atualização com auditoria
+
+- `action_user_id`
+
 ### Campos opcionais
+
 - `current_maintainer_user_id`
 - `solution_description`
 - `type`
 - `status`
 - `expected_date`
 - `completion_date`
+- `status_change_reason`
+- `assignment_change_reason`
+- `reschedule_reason`
+- `pause_reason`
+- `comment_type`
+- `comment_text`
 
 ### Regras atuais
-- `sector_id` e `requester_user_id` devem ser inteiros positivos
-- `current_maintainer_user_id`, quando informado, deve ser inteiro positivo
-- `location` e `service_description` devem ser textos válidos
+
+- `sector_id`, `requester_user_id`, `current_maintainer_user_id` e `action_user_id` devem ser inteiros positivos quando informados
 - `priority` deve ser `Baixa`, `Média` ou `Alta`
 - `type`, quando informado, deve ser `Corretiva` ou `Preventiva`
 - `status`, quando informado, deve seguir os status permitidos do fluxo
 - `expected_date` e `completion_date`, quando informadas, devem estar no formato `YYYY-MM-DD`
-- o parâmetro `id` deve ser um número inteiro positivo
+- se `expected_date` for alterada, deve ser enviada uma `reschedule_reason`
+- se o status mudar para `Pausado`, deve ser enviada uma `pause_reason`
 
 ---
 
 ## 🔎 Filtros disponíveis
-
-Na rota `GET /orders`, você pode usar:
 
 - `sector`
 - `requester`
@@ -306,22 +271,9 @@ Na rota `GET /orders`, você pode usar:
 - `priority`
 - `type`
 
-Exemplo:
-
-```bash
-/orders?sector=Sala de ovos
-/orders?requester=Esmeralda
-/orders?maintainer=Gesiel
-/orders?location=Máquina
-/orders?status=Em execução&priority=Alta
-/orders?type=Corretiva
-```
-
 ---
 
 ## ↕️ Ordenação disponível
-
-Na rota `GET /orders`, você pode usar:
 
 - `sortBy=id`
 - `sortBy=request_date`
@@ -331,55 +283,12 @@ Na rota `GET /orders`, você pode usar:
 - `order=asc`
 - `order=desc`
 
-Exemplo:
-
-```bash
-/orders?sortBy=id&order=desc
-/orders?sortBy=request_date&order=asc
-/orders?sortBy=expected_date&order=asc
-```
-
----
-
-## 🧠 Arquitetura do Sistema
-
-```text
-Route → ID Validation Middleware → Body Validation Middleware → Controller → Service → Database
-                                                    ↓
-                                          Not Found / Error Handler
-```
-
----
-
-## 📊 Padrão de Resposta da API
-
-### Sucesso simples
-```json
-{
-  "message": "Order saved successfully."
-}
-```
-
-### Sucesso com dados
-```json
-{
-  "message": "Orders fetched successfully.",
-  "data": []
-}
-```
-
-### Erro
-```json
-{
-  "message": "Order not found."
-}
-```
-
 ---
 
 ## 🗄️ Banco de Dados
 
 ### Estrutura principal
+
 - `sectors`
 - `roles`
 - `users`
@@ -387,98 +296,60 @@ Route → ID Validation Middleware → Body Validation Middleware → Controller
 - `service_orders`
 
 ### Tabelas de histórico/auditoria
+
 - `service_order_status_history`
 - `service_order_assignments`
 - `service_order_reschedules`
 - `service_order_pauses`
 - `service_order_comments`
 
-### Modelo atual da tabela `service_orders`
-
-Campos principais:
-- `id`
-- `sector_id`
-- `requester_user_id`
-- `current_maintainer_user_id`
-- `location`
-- `request_date`
-- `service_description`
-- `solution_description`
-- `type`
-- `priority`
-- `status`
-- `expected_date`
-- `completion_date`
-- `service_start_at`
-- `service_end_at`
-- `created_at`
-- `updated_at`
-
-### Estratégia adotada
-- colunas legadas removidas
-- backend adaptado para o novo modelo
-- dados modelo reinseridos já no padrão novo
-- IDs relacionais agora fazem parte da estrutura principal das ordens
-- tabelas de histórico criadas separadamente para eventos repetíveis
-
 ---
 
 ## 🕓 Histórico e Auditoria
 
-Eventos repetíveis não ficam na tabela principal da ordem.
+A partir desta etapa, o backend começa a preparar o registro automático de eventos:
 
-### Exemplos
-- mudança de status → `service_order_status_history`
-- troca de mantenedor → `service_order_assignments`
-- remarcação de data prevista → `service_order_reschedules`
-- pausa de serviço → `service_order_pauses`
-- observações/comentários → `service_order_comments`
+- criação da ordem → registra status inicial
+- alteração de status → registra histórico de status
+- troca de mantenedor → registra atribuição
+- remarcação de data prevista → registra remarcação
+- pausa → registra pausa com justificativa
+- comentário → registra comentário vinculado à ordem
 
 ---
 
 ## 📊 Roadmap
 
 - [x] Estrutura inicial do projeto
-- [x] Separação em camadas (Routes + Controllers)
+- [x] Separação em camadas
 - [x] Conexão com banco de dados
-- [x] Inserção de dados via API
-- [x] Listagem de dados via API
-- [x] Consulta por ID
-- [x] Atualização de registros (PUT)
-- [x] Exclusão de registros (DELETE)
-- [x] Validação manual de dados
-- [x] Variáveis de ambiente no código
-- [x] Refatoração da validação para middleware
-- [x] Refatoração para camada de services
-- [x] Padronização das respostas em JSON
-- [x] Tratamento global para rotas não encontradas
-- [x] Estrutura inicial para tratamento centralizado de erros
-- [x] Validação do parâmetro ID nas rotas
-- [x] Filtros via query params
-- [x] Ordenação via query params
-- [x] Expansão do modelo de ordens
-- [x] Criação da base de usuários, papéis e setores no banco
-- [x] Remodelagem da tabela principal `service_orders`
-- [x] Remoção de colunas legadas e adaptação do backend
-- [x] Reinserção de dados modelo coerentes com a nova modelagem
-- [x] Criação das tabelas de histórico
-- [ ] Integração do backend com histórico/auditoria
+- [x] CRUD de ordens de serviço
+- [x] Validações com middleware
+- [x] Camada de services
+- [x] Respostas em JSON
+- [x] Filtros e ordenação
+- [x] Base de usuários, papéis e setores
+- [x] Modelo relacional de ordens
+- [x] Full reset do banco
+- [x] Tabelas de histórico/auditoria
+- [x] Integração inicial do backend com histórico/auditoria
+- [ ] Melhorar consistência com transações SQL
 - [ ] Regras de negócio por perfil
 - [ ] Interface do módulo de ordens
 - [ ] Colocar o módulo em uso real na empresa
-- [ ] Implementação de indicadores
-- [ ] Autenticação (JWT)
-- [ ] Documentação com Swagger
+- [ ] Indicadores
+- [ ] Autenticação JWT
+- [ ] Swagger
 
 ---
 
 ## 👨‍💻 Autor
 
 Desenvolvido por **Claudiney**  
-Projeto focado em evolução prática em desenvolvimento backend
+Projeto focado em evolução prática em desenvolvimento backend.
 
 ---
 
 ## 📄 Licença
 
-Este projeto está sob a licença MIT.
+MIT

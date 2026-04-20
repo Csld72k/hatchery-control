@@ -1,3 +1,11 @@
+function formatDateOnly(value) {
+  if (!value) return null;
+
+  if (typeof value === 'string') return value.slice(0, 10);
+
+  return value.toISOString().slice(0, 10);
+}
+
 const {
   createOrderService,
   getOrdersService,
@@ -109,8 +117,48 @@ async function updateOrder(req, res) {
       priority,
       status,
       expected_date,
-      completion_date
+      completion_date,
+      action_user_id,
+      status_change_reason,
+      assignment_change_reason,
+      reschedule_reason,
+      pause_reason,
+      comment_type,
+      comment_text
     } = req.body;
+
+    if (
+      !action_user_id ||
+      !Number.isInteger(Number(action_user_id)) ||
+      Number(action_user_id) <= 0
+    ) {
+      return res.status(400).json({
+        message: 'The field "action_user_id" is required for updating an order.'
+      });
+    }
+
+    const oldExpectedDate = formatDateOnly(existingOrder.expected_date);
+
+    const newExpectedDate =
+      expected_date !== undefined && expected_date !== null && expected_date !== ''
+        ? expected_date
+        : oldExpectedDate;
+
+    if (newExpectedDate !== oldExpectedDate && !reschedule_reason?.trim()) {
+      return res.status(400).json({
+        message: 'The field "reschedule_reason" is required when expected_date changes.'
+      });
+    }
+
+    if (
+      status === 'Pausado' &&
+      existingOrder.status !== 'Pausado' &&
+      !pause_reason?.trim()
+    ) {
+      return res.status(400).json({
+        message: 'The field "pause_reason" is required when pausing an order.'
+      });
+    }
 
     const updatedOrderData = {
       sector_id: Number(sector_id),
@@ -133,7 +181,15 @@ async function updateOrder(req, res) {
       expected_date:
         expected_date !== undefined ? expected_date : existingOrder.expected_date,
       completion_date:
-        completion_date !== undefined ? completion_date : existingOrder.completion_date
+        completion_date !== undefined ? completion_date : existingOrder.completion_date,
+      action_user_id: Number(action_user_id),
+      status_change_reason,
+      assignment_change_reason,
+      reschedule_reason,
+      pause_reason,
+      comment_type,
+      comment_text,
+      existingOrder
     };
 
     const rowsAffected = await updateOrderService(id, updatedOrderData);

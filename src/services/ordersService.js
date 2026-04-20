@@ -13,34 +13,49 @@ async function createOrderService({
   expected_date,
   completion_date
 }) {
-  await sql.query`
-    INSERT INTO service_orders (
-      sector_id,
-      requester_user_id,
-      current_maintainer_user_id,
-      location,
-      service_description,
-      solution_description,
-      type,
-      priority,
-      status,
-      expected_date,
-      completion_date
-    )
-    VALUES (
-      ${sector_id},
-      ${requester_user_id},
-      ${current_maintainer_user_id || null},
-      ${location},
-      ${service_description},
-      ${solution_description || null},
-      ${type || null},
-      ${priority},
-      ${status || 'Aguardando resposta'},
-      ${expected_date || null},
-      ${completion_date || null}
-    )
-  `;
+  const initialStatus = status || 'Aguardando resposta';
+
+  const result = await sql.query`
+  INSERT INTO service_orders (
+    sector_id,
+    requester_user_id,
+    current_maintainer_user_id,
+    location,
+    service_description,
+    solution_description,
+    type,
+    priority,
+    status,
+    expected_date,
+    completion_date
+  )
+  OUTPUT INSERTED.id
+  VALUES (
+    ${sector_id},
+    ${requester_user_id},
+    ${current_maintainer_user_id || null},
+    ${location},
+    ${service_description},
+    ${solution_description || null},
+    ${type || null},
+    ${priority},
+    ${initialStatus},
+    ${expected_date || null},
+    ${completion_date || null}
+  )
+`;
+
+  const createdOrderId = result.recordset[0].id;
+
+  await createStatusHistory({
+    service_order_id: createdOrderId,
+    old_status: null,
+    new_status: initialStatus,
+    changed_by_user_id: requester_user_id,
+    reason: 'Ordem de serviço criada.'
+  });
+
+  return createdOrderId;
 }
 
 async function getOrdersService(filters = {}) {
@@ -193,7 +208,15 @@ async function updateOrderService(
     priority,
     status,
     expected_date,
-    completion_date
+    completion_date,
+    action_user_id,
+    status_change_reason,
+    assignment_change_reason,
+    reschedule_reason,
+    pause_reason,
+    comment_type,
+    comment_text,
+    existingOrder
   }
 ) {
   const result = await sql.query`
@@ -214,7 +237,69 @@ async function updateOrderService(
     WHERE id = ${id}
   `;
 
-  return result.rowsAffected[0];
+  const rowsAffected = result.rowsAffected[0];
+
+  if (rowsAffected === 0) {
+    return 0;
+  }
+
+  const oldStatus = existingOrder.status;
+  const newStatus = status;
+
+  if (newStatus && newStatus !== oldStatus) {
+    await createStatusHistory({
+      service_order_id: Number(id),
+      old_status: oldStatus,
+      new_status: newStatus,
+      changed_by_user_id: action_user_id,
+      reason: status_change_reason || null
+    });
+  }
+
+  const oldMaintainerId = existingOrder.current_maintainer_user_id;
+  const newMaintainerId = current_maintainer_user_id;
+
+  if (newMaintainerId && Number(newMaintainerId) !== Number(oldMaintainerId)) {
+    await createAssignmentHistory({
+      service_order_id: Number(id),
+      old_maintainer_user_id: oldMaintainerId,
+      new_maintainer_user_id: newMaintainerId,
+      changed_by_user_id: action_user_id,
+      reason: assignment_change_reason || null
+    });
+  }
+
+  const oldExpectedDate = formatDateOnly(existingOrder.expected_date);
+  const newExpectedDate = formatDateOnly(expected_date);
+
+  if (newExpectedDate && newExpectedDate !== oldExpectedDate) {
+    await createRescheduleHistory({
+      service_order_id: Number(id),
+      old_expected_date: oldExpectedDate,
+      new_expected_date: newExpectedDate,
+      changed_by_user_id: action_user_id,
+      reason: reschedule_reason
+    });
+  }
+
+  if (newStatus === 'Pausado' && oldStatus !== 'Pausado') {
+    await createPauseHistory({
+      service_order_id: Number(id),
+      paused_by_user_id: action_user_id,
+      pause_reason
+    });
+  }
+
+  if (comment_text && comment_type) {
+    await createOrderComment({
+      service_order_id: Number(id),
+      user_id: action_user_id,
+      comment_type,
+      comment_text
+    });
+  }
+
+  return rowsAffected;
 }
 
 async function deleteOrderService(id) {
@@ -224,6 +309,132 @@ async function deleteOrderService(id) {
   `;
 
   return result.rowsAffected[0];
+}
+
+async function createStatusHistory({
+  service_order_id,
+  old_status,
+  new_status,
+  changed_by_user_id,
+  reason
+}) {
+  await sql.query`
+    INSERT INTO service_order_status_history (
+      service_order_id,
+      old_status,
+      new_status,
+      changed_by_user_id,
+      reason
+    )
+    VALUES (
+      ${service_order_id},
+      ${old_status},
+      ${new_status},
+      ${changed_by_user_id},
+      ${reason || null}
+    )
+  `;
+}
+
+async function createAssignmentHistory({
+  service_order_id,
+  old_maintainer_user_id,
+  new_maintainer_user_id,
+  changed_by_user_id,
+  reason
+}) {
+  await sql.query`
+    INSERT INTO service_order_assignments (
+      service_order_id,
+      old_maintainer_user_id,
+      new_maintainer_user_id,
+      changed_by_user_id,
+      reason
+    )
+    VALUES (
+      ${service_order_id},
+      ${old_maintainer_user_id || null},
+      ${new_maintainer_user_id},
+      ${changed_by_user_id},
+      ${reason || null}
+    )
+  `;
+}
+
+async function createRescheduleHistory({
+  service_order_id,
+  old_expected_date,
+  new_expected_date,
+  changed_by_user_id,
+  reason
+}) {
+  await sql.query`
+    INSERT INTO service_order_reschedules (
+      service_order_id,
+      old_expected_date,
+      new_expected_date,
+      changed_by_user_id,
+      reason
+    )
+    VALUES (
+      ${service_order_id},
+      ${old_expected_date || null},
+      ${new_expected_date},
+      ${changed_by_user_id},
+      ${reason}
+    )
+  `;
+}
+
+async function createPauseHistory({
+  service_order_id,
+  paused_by_user_id,
+  pause_reason
+}) {
+  await sql.query`
+    INSERT INTO service_order_pauses (
+      service_order_id,
+      paused_by_user_id,
+      pause_reason
+    )
+    VALUES (
+      ${service_order_id},
+      ${paused_by_user_id},
+      ${pause_reason}
+    )
+  `;
+}
+
+async function createOrderComment({
+  service_order_id,
+  user_id,
+  comment_type,
+  comment_text
+}) {
+  await sql.query`
+    INSERT INTO service_order_comments (
+      service_order_id,
+      user_id,
+      comment_type,
+      comment_text
+    )
+    VALUES (
+      ${service_order_id},
+      ${user_id},
+      ${comment_type},
+      ${comment_text}
+    )
+  `;
+}
+
+function formatDateOnly(value) {
+  if (!value) return null;
+
+  if (typeof value === 'string') {
+    return value.slice(0, 10);
+  }
+
+  return value.toISOString().slice(0, 10);
 }
 
 module.exports = {
