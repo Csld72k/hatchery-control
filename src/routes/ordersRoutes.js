@@ -8,6 +8,6 @@ router.post('/orders', orderValidationMiddleware, ordersController.createOrder);
 router.get('/orders', ordersController.getOrders);
 router.get('/orders/:id', validateIdMiddleware, ordersController.getOrderById);
 router.put('/orders/:id', validateIdMiddleware, orderValidationMiddleware, ordersController.updateOrder);
-router.delete('/orders/:id', validateIdMiddleware, ordersController.deleteOrder);
+router.patch('/orders/:id/cancel', validateIdMiddleware, ordersController.cancelOrder);
 
 module.exports = router;

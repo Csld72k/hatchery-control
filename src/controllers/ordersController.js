@@ -11,7 +11,7 @@ const {
   getOrdersService,
   getOrderByIdService,
   updateOrderService,
-  deleteOrderService
+  cancelOrderService
 } = require('../services/ordersService');
 
 // Create order
@@ -57,7 +57,7 @@ async function createOrder(req, res) {
   }
 }
 
-// GET orders
+// Get orders
 async function getOrders(req, res) {
   try {
     const filters = req.query;
@@ -74,7 +74,7 @@ async function getOrders(req, res) {
   }
 }
 
-// GET order by ID
+// Get order by ID
 async function getOrderById(req, res) {
   try {
     const { id } = req.params;
@@ -95,7 +95,7 @@ async function getOrderById(req, res) {
   }
 }
 
-// UPDATE order
+// Update order
 async function updateOrder(req, res) {
   try {
     const { id } = req.params;
@@ -205,20 +205,44 @@ async function updateOrder(req, res) {
   }
 }
 
-// DELETE order
-async function deleteOrder(req, res) {
+// Cancel order
+async function cancelOrder(req, res) {
   try {
     const { id } = req.params;
-    const rowsAffected = await deleteOrderService(id);
+    const { action_user_id, cancellation_reason } = req.body;
+
+    if (!action_user_id || !Number.isInteger(Number(action_user_id)) || Number(action_user_id) <= 0) {
+      return res.status(400).json({ message: 'The field "action_user_id" is required for canceling an order.' });
+    }
+
+    if (!cancellation_reason || typeof cancellation_reason !== 'string' || !cancellation_reason.trim()) {
+      return res.status(400).json({ message: 'The field "cancellation_reason" is required for canceling an order.' });
+    }
+
+    const existingOrder = await getOrderByIdService(id);
+
+    if (!existingOrder) {
+      return res.status(404).json({ message: 'Order not found.' });
+    }
+
+    if (existingOrder.status === 'Cancelado') {
+      return res.status(400).json({ message: 'Order is already cancelled.' });
+    }
+
+    if (existingOrder.status === 'Concluído') {
+      return res.status(400).json({ message: 'Completed orders cannot be cancelled' });
+    }
+
+    const rowsAffected = await cancelOrderService(id, { action_user_id: Number(action_user_id), cancellation_reason, existingOrder });
 
     if (rowsAffected === 0) {
       return res.status(404).json({ message: 'Order not found.' });
     }
 
-    res.status(200).json({ message: 'Order deleted successfully.' });
+    res.status(200).json({ message: 'Order cancelled successfully.' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Error deleting order.' });
+    res.status(500).json({ message: 'Error cancelling order.' });
   }
 }
 
@@ -227,5 +251,5 @@ module.exports = {
   getOrders,
   getOrderById,
   updateOrder,
-  deleteOrder
+  cancelOrder
 };

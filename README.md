@@ -32,7 +32,7 @@ Sistema para gerenciamento de **ordens de serviço** com foco em centralização
 - Listagem de ordens
 - Consulta por ID
 - Atualização de ordens
-- Exclusão de ordens
+- Cancelamento lógico de ordens
 - Filtros por query params
 - Ordenação por query params
 - Validação de campos obrigatórios via middleware
@@ -45,6 +45,7 @@ Sistema para gerenciamento de **ordens de serviço** com foco em centralização
 - Modelo relacional consolidado para ordens de serviço
 - Estrutura de histórico/auditoria para status, atribuições, remarcações, pausas e comentários
 - Integração inicial do backend com histórico/auditoria
+- Cancelamento de OS registrado no histórico de status
 
 ### 📊 Indicadores
 - Estrutura pausada temporariamente
@@ -176,7 +177,7 @@ npm run dev
 - **GET** `/orders`
 - **GET** `/orders/:id`
 - **PUT** `/orders/:id`
-- **DELETE** `/orders/:id`
+- **PATCH** `/orders/:id/cancel`
 
 ---
 
@@ -218,11 +219,20 @@ npm run dev
 }
 ```
 
+### PATCH /orders/:id/cancel
+
+```json
+{
+  "action_user_id": 2,
+  "cancellation_reason": "Solicitação duplicada."
+}
+```
+
 ---
 
 ## ✅ Regras de Validação
 
-### Campos obrigatórios no payload atual
+### Campos obrigatórios no payload de criação/atualização
 
 - `sector_id`
 - `requester_user_id`
@@ -233,6 +243,11 @@ npm run dev
 ### Campo obrigatório para atualização com auditoria
 
 - `action_user_id`
+
+### Campos obrigatórios para cancelamento
+
+- `action_user_id`
+- `cancellation_reason`
 
 ### Campos opcionais
 
@@ -258,6 +273,8 @@ npm run dev
 - `expected_date` e `completion_date`, quando informadas, devem estar no formato `YYYY-MM-DD`
 - se `expected_date` for alterada, deve ser enviada uma `reschedule_reason`
 - se o status mudar para `Pausado`, deve ser enviada uma `pause_reason`
+- ordens concluídas não devem ser canceladas
+- ordens já canceladas não devem ser canceladas novamente
 
 ---
 
@@ -307,7 +324,7 @@ npm run dev
 
 ## 🕓 Histórico e Auditoria
 
-A partir desta etapa, o backend começa a preparar o registro automático de eventos:
+O backend registra eventos automaticamente:
 
 - criação da ordem → registra status inicial
 - alteração de status → registra histórico de status
@@ -315,6 +332,19 @@ A partir desta etapa, o backend começa a preparar o registro automático de eve
 - remarcação de data prevista → registra remarcação
 - pausa → registra pausa com justificativa
 - comentário → registra comentário vinculado à ordem
+- cancelamento → altera status para `Cancelado` e registra histórico de status
+
+---
+
+## 🧠 Observação sobre exclusão
+
+A exclusão física de ordens foi substituída por **cancelamento lógico**.
+
+Isso preserva:
+- histórico da OS
+- rastreabilidade
+- integridade das tabelas relacionadas
+- consultas futuras para auditoria
 
 ---
 
@@ -323,7 +353,7 @@ A partir desta etapa, o backend começa a preparar o registro automático de eve
 - [x] Estrutura inicial do projeto
 - [x] Separação em camadas
 - [x] Conexão com banco de dados
-- [x] CRUD de ordens de serviço
+- [x] CRUD inicial de ordens de serviço
 - [x] Validações com middleware
 - [x] Camada de services
 - [x] Respostas em JSON
@@ -333,6 +363,7 @@ A partir desta etapa, o backend começa a preparar o registro automático de eve
 - [x] Full reset do banco
 - [x] Tabelas de histórico/auditoria
 - [x] Integração inicial do backend com histórico/auditoria
+- [x] Cancelamento lógico de ordens
 - [ ] Melhorar consistência com transações SQL
 - [ ] Regras de negócio por perfil
 - [ ] Interface do módulo de ordens

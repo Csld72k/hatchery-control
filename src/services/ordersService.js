@@ -302,13 +302,30 @@ async function updateOrderService(
   return rowsAffected;
 }
 
-async function deleteOrderService(id) {
+async function cancelOrderService(id, { action_user_id, cancellation_reason, existingOrder }) {
   const result = await sql.query`
-    DELETE FROM service_orders
-    WHERE id = ${id}
+  UPDATE service_orders
+  SET
+    status = 'Cancelado',
+    updated_at = SYSDATETIME()
+  WHERE id = ${id}
   `;
 
-  return result.rowsAffected[0];
+  const rowsAffected = result.rowsAffected[0];
+
+  if (rowsAffected === 0) {
+    return 0;
+  }
+
+  await createStatusHistory({
+    service_order_id: Number(id),
+    old_status: existingOrder.status,
+    new_status: 'Cancelado',
+    changed_by_user_id: action_user_id,
+    reason: cancellation_reason
+  });
+
+  return rowsAffected;
 }
 
 async function createStatusHistory({
@@ -442,5 +459,5 @@ module.exports = {
   getOrdersService,
   getOrderByIdService,
   updateOrderService,
-  deleteOrderService
+  cancelOrderService
 };
