@@ -44,8 +44,8 @@ Sistema para gerenciamento de **ordens de serviço** com foco em centralização
 - Base criada para suportar usuários, papéis e setores
 - Modelo relacional consolidado para ordens de serviço
 - Estrutura de histórico/auditoria para status, atribuições, remarcações, pausas e comentários
-- Integração inicial do backend com histórico/auditoria
-- Cancelamento de OS registrado no histórico de status
+- Integração do backend com histórico/auditoria
+- Operações críticas protegidas por transações SQL
 
 ### 📊 Indicadores
 - Estrutura pausada temporariamente
@@ -336,15 +336,18 @@ O backend registra eventos automaticamente:
 
 ---
 
-## 🧠 Observação sobre exclusão
+## 🔒 Consistência com Transações SQL
 
-A exclusão física de ordens foi substituída por **cancelamento lógico**.
+As operações críticas devem ser executadas dentro de transações SQL para garantir consistência.
 
-Isso preserva:
-- histórico da OS
-- rastreabilidade
-- integridade das tabelas relacionadas
-- consultas futuras para auditoria
+Exemplo de cenário protegido:
+- atualizar a ordem
+- gravar histórico de status
+- gravar atribuição
+- gravar remarcação
+- gravar comentário
+
+Se uma dessas etapas falhar, a transação deve fazer rollback para evitar dados parciais.
 
 ---
 
@@ -364,7 +367,7 @@ Isso preserva:
 - [x] Tabelas de histórico/auditoria
 - [x] Integração inicial do backend com histórico/auditoria
 - [x] Cancelamento lógico de ordens
-- [ ] Melhorar consistência com transações SQL
+- [x] Consistência com transações SQL
 - [ ] Regras de negócio por perfil
 - [ ] Interface do módulo de ordens
 - [ ] Colocar o módulo em uso real na empresa

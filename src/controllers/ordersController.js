@@ -179,9 +179,9 @@ async function updateOrder(req, res) {
       priority,
       status: status !== undefined ? status : existingOrder.status,
       expected_date:
-        expected_date !== undefined ? expected_date : existingOrder.expected_date,
+        expected_date !== undefined ? expected_date : formatDateOnly(existingOrder.expected_date),
       completion_date:
-        completion_date !== undefined ? completion_date : existingOrder.completion_date,
+        completion_date !== undefined ? completion_date : formatDateOnly(existingOrder.completion_date),
       action_user_id: Number(action_user_id),
       status_change_reason,
       assignment_change_reason,
